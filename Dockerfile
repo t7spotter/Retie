@@ -39,6 +39,6 @@ EXPOSE 8000
 CMD ["sh", "-c", "\
 python manage.py migrate --noinput && \
 python manage.py collectstatic --noinput && \
-mkdir -p api-docs/shorty && \
-python manage.py spectacular --file api-docs/shorty/openapi.yaml && \
+mkdir -p api-docs/retie && \
+python manage.py spectacular --file api-docs/retie/openapi.yaml && \
 gunicorn --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-2} --chdir /app config.wsgi:application"]

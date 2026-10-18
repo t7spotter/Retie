@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Shorty API
+  title: Retie API
   version: 1.0.0
   description: REST API for this self-hosted URL shortener. All endpoints require
     authentication.

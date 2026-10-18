@@ -146,13 +146,13 @@ def test_docs_portal_serves_spec_from_disk(api):
     index = api.get("/api/docs/index.json")
     assert index.status_code == 200
     body = index.json()
-    assert body["title"] == "Shorty API"
+    assert body["title"] == "Retie API"
     assert "/api/v1/links/" in [op["path"] for op in body["operations"]]
 
 
 @pytest.mark.parametrize(
     "path",
-    ["llms.txt", "revision.json", "openapi/shorty.yaml", "types/shorty.ts"],
+    ["llms.txt", "revision.json", "openapi/retie.yaml", "types/retie.ts"],
 )
 def test_docs_agent_endpoints(api, path):
     assert api.get(f"/api/docs/{path}").status_code == 200

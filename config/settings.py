@@ -139,7 +139,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Shorty API",
+    "TITLE": "Retie API",
     "DESCRIPTION": "REST API for this self-hosted URL shortener. All endpoints require authentication.",
     "VERSION": "1.0.0",
     # The documentation endpoints are meta, not API surface; keep them out of
@@ -181,14 +181,14 @@ def drop_meta_endpoints(endpoints):
 # API documentation portal (apiwarden). The OpenAPI spec itself is generated
 # by drf-spectacular (see SPECTACULAR_SETTINGS); regenerate the served copy
 # with:
-#   python manage.py spectacular --file api-docs/shorty/openapi.yaml
+#   python manage.py spectacular --file api-docs/retie/openapi.yaml
 # apiwarden serves that file as a live portal at /api/docs/. Set
 # APIWARDEN_TOKEN to require a shared token on the portal; by default it is
 # public, like the rest of the docs.
 token = env.str("APIWARDEN_TOKEN", default="")  # omit entirely = public portal
 APIWARDEN = {
     "root": BASE_DIR / "api-docs",
-    "title": "Shorty API",
+    "title": "Retie API",
     "servers": [SITE_URL],
     "watch": DEBUG,
 }

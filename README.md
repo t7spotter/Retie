@@ -1,6 +1,6 @@
-# Shorty — a simple, secure, self-hosted URL shortener
+# Retie — a simple, secure, self-hosted URL shortener
 
-Shorty is a standalone URL shortener you install and operate yourself.
+Retie is a standalone URL shortener you install and operate yourself.
 Every installation is fully independent: your server, your domain, your
 database, your user accounts, your analytics. It talks to no external
 service and never phones home.
@@ -58,7 +58,7 @@ Docker deploys don't require Node unless you change the templates/CSS source.
 2. Start PostgreSQL any way you like; the quickest is:
 
    ```bash
-   docker run -d --name shorty-pg -e POSTGRES_PASSWORD=postgres \
+   docker run -d --name retie-pg -e POSTGRES_PASSWORD=postgres \
      -e POSTGRES_DB=shortener -p 5432:5432 postgres:14.4
    ```
 
@@ -119,7 +119,7 @@ there is no CDN or global platform involved.
 ### 2. Environment
 
 ```bash
-scp .env.example server:/srv/shortyt/.env
+scp .env.example server:/srv/retie/.env
 ```
 
 Edit `.env` on the server:
@@ -207,7 +207,7 @@ docker compose exec -T postgres psql -U postgres -c "CREATE DATABASE shortener;"
 docker compose exec -T postgres psql -U postgres shortener < backup_2026-10-18.sql
 
 # Off-server copy (recommended)
-scp server:/srv/shorty/backup_2026-10-18.sql ./
+scp server:/srv/retie/backup_2026-10-18.sql ./
 ```
 
 Also back up `.env` (contains `SECRET_KEY` — losing it invalidates sessions
@@ -250,7 +250,7 @@ unpkg.com/lucide).
 
 Base: `/api/v1/` — interactive documentation at `/api/docs/`, served by
 [apiwarden](https://pypi.org/project/apiwarden/) from the committed OpenAPI
-spec (`api-docs/shorty/openapi.yaml`). The raw schema is also available at
+spec (`api-docs/retie/openapi.yaml`). The raw schema is also available at
 `/api/schema/`. Auth: session cookie (browser) or an API key.
 
 ### API keys
@@ -282,12 +282,12 @@ key there and calls to `SITE_URL` work from the browser.
 Because the docs are served from a spec file, they can also be read by agents:
 `/api/docs/mcp` is an MCP server (`list_apis`, `search_operations`,
 `get_operation`, …), and `/api/docs/index.json`, `/api/docs/llms.txt`,
-`/api/docs/types/shorty.ts` expose the same content as data. That is why the
+`/api/docs/types/retie.ts` expose the same content as data. That is why the
 spec is regenerated on container start — edit the API and the docs follow.
 After changing API code locally, refresh the spec with:
 
 ```bash
-.venv/bin/python manage.py spectacular --file api-docs/shorty/openapi.yaml
+.venv/bin/python manage.py spectacular --file api-docs/retie/openapi.yaml
 ```
 
 Optional: set `APIWARDEN_TOKEN` in `.env` to require a shared token on every
