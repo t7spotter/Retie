@@ -1,0 +1,85 @@
+/*
+ * Tailwind CSS entry point. Build with:
+ *   npx @tailwindcss/cli -i static/css/src/input.css -o static/css/app.css --minify
+ * The compiled output is committed so development and Docker don't need Node.
+ */
+@import "tailwindcss";
+
+/* Class-based dark mode: <html class="dark"> is set by the theme script. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Brand palette (twine.net):
+ *   #213A57 navy · #0B6477 deep teal · #14919B teal · #0AD1C8 cyan
+ *   #45DFB1 mint · #80ED99 green
+ *
+ * The UI is written against Tailwind's stone (neutral) and indigo (accent)
+ * names, with emerald for success states and amber/red untouched. Mapping
+ * the palette onto those names here restyles every component at once while
+ * the templates stay readable.
+ */
+@theme {
+  /* Neutral: greys hue-shifted into the palette's own teal range so both
+     light and dark modes are "made of" the brand colors: light surfaces
+     take a faint teal cast, and dark mode is teal-black night (950 page,
+     900 cards, mid steps stay quiet so borders read as shade, not stripes). */
+  --color-stone-50: #f1f7f8;
+  --color-stone-100: #e2eef0;
+  --color-stone-200: #c3d6da;
+  --color-stone-300: #9fb6ba;
+  --color-stone-400: #7b989e;
+  --color-stone-500: #49656d;
+  --color-stone-600: #2b6165;
+  --color-stone-700: #164a52;
+  --color-stone-800: #0e353c;
+  --color-stone-900: #0a262c;
+  --color-stone-950: #061a1e;
+
+  /* Accent: primary actions deep teal, highlights cyan/mint. */
+  --color-indigo-50: #e7f9f5;
+  --color-indigo-100: #c9f4ec;
+  --color-indigo-200: #a7efe1;
+  --color-indigo-300: #45dfb1;
+  --color-indigo-400: #0ad1c8;
+  --color-indigo-500: #14919b;
+  --color-indigo-600: #0b6477;
+  --color-indigo-700: #085562;
+  --color-indigo-800: #0a4a58;
+  --color-indigo-900: #0a404d;
+  --color-indigo-950: #083540;
+
+  /* Success greens: the palette's #80ED99 / #45DFB1 plus derived shades. */
+  --color-emerald-50: #e9fbf3;
+  --color-emerald-100: #cff6e2;
+  --color-emerald-200: #a9efcb;
+  --color-emerald-300: #80ed99;
+  --color-emerald-400: #45dfb1;
+  --color-emerald-500: #1fbf9f;
+  --color-emerald-600: #148f79;
+  --color-emerald-700: #0f7463;
+  --color-emerald-800: #0e5d52;
+  --color-emerald-900: #10483f;
+  --color-emerald-950: #0d332e;
+}
+
+@layer base {
+  /* Django-rendered form widgets (login, register, password forms) get the
+     same styling as the hand-written inputs. */
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="url"],
+  input[type="number"],
+  input[type="datetime-local"],
+  select {
+    @apply rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 outline-none transition-colors
+           placeholder:text-stone-400
+           focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
+           dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40;
+  }
+
+  input[type="datetime-local"] {
+    @apply dark:[color-scheme:dark];
+  }
+}

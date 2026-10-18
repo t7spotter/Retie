@@ -1,0 +1,69 @@
+{% load humanize %}
+<div id="links-table-region"
+     hx-get="{% url 'link_table' %}?{{ table_query }}"
+     hx-trigger="links-changed from:body"
+     hx-target="this"
+     hx-swap="outerHTML">
+  <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    {% if page_obj.object_list %}
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[640px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-stone-200 text-xs font-medium uppercase tracking-wide text-stone-400 dark:border-stone-800">
+            <th scope="col" class="px-5 py-3">Link</th>
+            <th scope="col" class="px-5 py-3">Short URL</th>
+            <th scope="col" class="px-5 py-3">Status</th>
+            <th scope="col" class="px-5 py-3 text-right">Clicks</th>
+            <th scope="col" class="px-5 py-3">Last click</th>
+            <th scope="col" class="px-5 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for link in page_obj.object_list %}
+            {% include "links/_row.html" %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="px-6 py-14 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
+        <i data-lucide="mouse-pointer-click" class="h-6 w-6"></i>
+      </span>
+      {% if query or status != 'all' %}
+      <p class="mt-4 font-medium text-stone-700 dark:text-stone-200">No links match your filters</p>
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Try a different search term or filter.</p>
+      {% else %}
+      <p class="mt-4 font-medium text-stone-700 dark:text-stone-200">No links yet</p>
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Create your first short link using the form — it only takes a URL.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="mt-4 flex items-center justify-between" aria-label="Pagination">
+    <p class="text-sm text-stone-500 dark:text-stone-400">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </p>
+    <div class="flex gap-2">
+      {% if page_obj.has_previous %}
+      <a href="{% url 'dashboard' %}?{{ table_query }}&amp;page={{ page_obj.previous_page_number }}"
+         hx-get="{% url 'link_table' %}?{{ table_query }}&amp;page={{ page_obj.previous_page_number }}"
+         hx-target="#links-table-region" hx-swap="outerHTML"
+         class="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">
+        Previous
+      </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a href="{% url 'dashboard' %}?{{ table_query }}&amp;page={{ page_obj.next_page_number }}"
+         hx-get="{% url 'link_table' %}?{{ table_query }}&amp;page={{ page_obj.next_page_number }}"
+         hx-target="#links-table-region" hx-swap="outerHTML"
+         class="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">
+        Next
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+</div>
