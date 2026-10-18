@@ -1,0 +1,15 @@
+# Runtime dependencies. Run `make deps` or
+# `.venv/bin/pip install -r requirements.txt` to install, and
+# `.venv/bin/pip freeze > requirements.txt` (in the venv) to update pins.
+Django==5.2.18
+djangorestframework==3.16.1
+drf-spectacular==0.28.0
+django-environ==0.12.1
+psycopg[binary]==3.2.13
+gunicorn==23.0.0
+whitenoise==6.9.0
+apiwarden==0.7.0
+
+# Development / test (also installed by requirements-dev)
+pytest==8.4.2
+pytest-django==4.11.1

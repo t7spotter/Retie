@@ -1,0 +1,38 @@
+# No credentials hardcoded: everything below is provided by `.env` (see
+# .env.example). Only the app container is exposed to the host/proxy --
+# Postgres is never published.
+
+services:
+  app:
+    build: .
+    env_file: .env
+    # Point Django at the Postgres service defined below, regardless of what
+    # DATABASE_URL says on the operator's machine.
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - static:/app/staticfiles
+
+  postgres:
+    image: postgres:16
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+  static:
