@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Create account — Shorty{% endblock %}
+
+{% block body %}
+<div class="grid min-h-screen place-items-center px-4">
+  <div class="w-full max-w-sm">
+    <a href="{% if LANDING_ENABLED %}{% url 'landing' %}{% else %}{% url 'dashboard' %}{% endif %}" class="mb-8 flex items-center justify-center gap-2 font-semibold tracking-tight">
+      <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-600 text-white"><i data-lucide="link" class="h-4 w-4"></i></span>
+      Shorty
+    </a>
+
+    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <h1 class="text-lg font-semibold tracking-tight text-stone-900 dark:text-white">Create account</h1>
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Start shortening links on your own domain.</p>
+
+      <form method="post" action="{% url 'register' %}" class="mt-5 space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">
+            {% if field.label == "Email address" %}Email{% else %}{{ field.label }}{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}
+          <p class="mt-1 text-xs text-stone-400">{{ field.help_text }}</p>
+          {% endif %}
+          {% for error in field.errors %}
+          <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+          Create account
+        </button>
+      </form>
+    </div>
+
+    <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
+      Already have an account?
+      <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
