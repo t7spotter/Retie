@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Analytics — /{{ link.code }}{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+  <a href="{% url 'dashboard' %}" class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">
+    <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to dashboard
+  </a>
+
+  <!-- Link summary header -->
+  <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="text-lg font-semibold tracking-tight text-stone-900 dark:text-white">
+          {% if link.title %}{{ link.title }}{% else %}Analytics{% endif %}
+        </h1>
+        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <a href="{{ SITE_URL }}/{{ link.code }}" target="_blank" rel="noopener" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">{{ SITE_URL }}/{{ link.code }}</a>
+          <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-stone-400"></i>
+          <span class="break-all text-stone-500 dark:text-stone-400">{{ link.destination }}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" data-copy="{{ SITE_URL }}/{{ link.code }}"
+                class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+          <i data-lucide="copy" class="h-4 w-4"></i> Copy
+        </button>
+        <a href="{% url 'link_edit' link.code %}"
+           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+          <i data-lucide="pencil" class="h-4 w-4"></i> Edit
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-sm text-stone-500 dark:text-stone-400">Total clicks</p>
+      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ total_clicks }}</p>
+    </div>
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-sm text-stone-500 dark:text-stone-400">Clicks, 30 days</p>
+      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ total_clicks_30 }}</p>
+    </div>
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-sm text-stone-500 dark:text-stone-400">Status</p>
+      <p class="mt-2 text-2xl font-semibold tracking-tight">
+        {% if link.status == 'active' %}
+        <span class="text-emerald-600 dark:text-emerald-400">Active</span>
+        {% elif link.status == 'expired' %}
+        <span class="text-amber-600 dark:text-amber-400">Expired</span>
+        {% else %}
+        <span class="text-stone-500">Inactive</span>
+        {% endif %}
+      </p>
+    </div>
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <p class="text-sm text-stone-500 dark:text-stone-400">Created</p>
+      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ link.created_at|naturaltime }}</p>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Clicks over the last 30 days</h2>
+    <div class="mt-3 h-56">
+      <canvas id="analytics-chart" aria-label="Clicks per day over the last 30 days"></canvas>
+    </div>
+    {{ series|json_script:"analytics-chart-data" }}
+  </div>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <!-- Referrers -->
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Top referrers</h2>
+      {% if referrers %}
+      <ul class="mt-4 space-y-3">
+        {% for row in referrers %}
+        <li>
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <span class="truncate text-stone-700 dark:text-stone-200">{{ row.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}</span>
+            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ row.count }}</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio row.count max_referrer_count 100 %}%"></div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">No referrers recorded yet. Most browsers omit referrer data.</p>
+      {% endif %}
+    </div>
+
+    <!-- Devices -->
+    <div class="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Devices</h2>
+      {% if devices %}
+      <ul class="mt-4 space-y-3">
+        {% for name, count in devices.items %}
+        <li>
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <span class="text-stone-700 dark:text-stone-200">{{ name|title }}</span>
+            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ count }}</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio count total_clicks 100 %}%"></div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">No clicks recorded yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recently clicked -->
+  <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Recent clicks</h2>
+    {% if recent_clicks %}
+    <ul class="mt-4 divide-y divide-stone-100 dark:divide-stone-800">
+      {% for click in recent_clicks %}
+      <li class="flex items-center justify-between gap-3 py-2.5 text-sm">
+        <span class="text-stone-500 dark:text-stone-400">
+          {% if click.referrer %}{{ click.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}{% else %}Direct{% endif %}
+        </span>
+        <span class="flex items-center gap-3 text-stone-400">
+          <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs dark:bg-stone-800">{{ click.device }}</span>
+          <time datetime="{{ click.created_at|date:'c' }}">{{ click.created_at|naturaltime }}</time>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="mt-4 py-8 text-center">
+      <i data-lucide="mouse-pointer-click" class="mx-auto h-6 w-6 text-stone-300"></i>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">No clicks yet. Share the short link to start collecting analytics.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <p class="mt-6 text-xs text-stone-400">
+    Click counts include bots, link previews, and automated requests — they do not represent unique human visitors.
+  </p>
+
+  <div id="toast" data-toast hidden class="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-800 shadow-lg dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></div>
+</div>
+{% endblock %}
