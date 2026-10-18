@@ -1,0 +1,613 @@
+openapi: 3.0.3
+info:
+  title: Shorty API
+  version: 1.0.0
+  description: REST API for this self-hosted URL shortener. All endpoints require
+    authentication.
+paths:
+  /api/v1/links/:
+    get:
+      operationId: links_list
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: List the current user's links.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - links
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLinkList'
+          description: ''
+    post:
+      operationId: links_create
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Create a short link.
+      tags:
+      - links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Link'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Link'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+  /api/v1/links/{code}/:
+    get:
+      operationId: links_retrieve
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Retrieve one link by short code.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+    put:
+      operationId: links_update
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Update a link.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Link'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Link'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+    patch:
+      operationId: links_partial_update
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Partially update a link.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLink'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLink'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLink'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+    delete:
+      operationId: links_destroy
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Delete a link (click history goes with it).
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/links/{code}/activate/:
+    post:
+      operationId: links_activate_create
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Start redirecting this link again.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Link'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Link'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+  /api/v1/links/{code}/analytics/:
+    get:
+      operationId: links_analytics_retrieve
+      description: Aggregated analytics for one of the current user's links.
+      summary: Per-link analytics.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkAnalyticsResponse'
+          description: ''
+  /api/v1/links/{code}/deactivate/:
+    post:
+      operationId: links_deactivate_create
+      description: CRUD on the current user's links. Lookup is by short code.
+      summary: Stop redirecting this link.
+      parameters:
+      - in: path
+        name: code
+        schema:
+          type: string
+        required: true
+      tags:
+      - links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Link'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Link'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Link'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Link'
+          description: ''
+  /api/v1/me/:
+    get:
+      operationId: me_retrieve
+      summary: The current user's profile.
+      tags:
+      - me
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/v1/stats/:
+    get:
+      operationId: stats_retrieve
+      summary: Dashboard totals for the current user.
+      tags:
+      - stats
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+          description: ''
+  /api/v1/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Self-service API keys, throttled so password guessing stays slow.
+
+        POST creates (or re-issues) the key for valid credentials; the key is
+        shown once and can be revoked with DELETE. There is deliberately no GET:
+        a key can be read when created, after which only its presence is known.
+      summary: Exchange username + password for an API key.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIKey'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/APIKey'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/APIKey'
+        required: true
+      security:
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+          description: ''
+        '401':
+          description: No response body
+    delete:
+      operationId: token_revoke
+      description: |-
+        Self-service API keys, throttled so password guessing stays slow.
+
+        POST creates (or re-issues) the key for valid credentials; the key is
+        shown once and can be revoked with DELETE. There is deliberately no GET:
+        a key can be read when created, after which only its presence is known.
+      summary: Revoke your API key (requires an authenticated request).
+      tags:
+      - token
+      security:
+      - tokenAuth: []
+      - sessionAuth: []
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          description: No response body
+components:
+  schemas:
+    APIKey:
+      type: object
+      description: 'Request body for POST /api/v1/token/: username and password exchange.'
+      properties:
+        username:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+      required:
+      - password
+      - username
+    ClickPoint:
+      type: object
+      description: One day of a clicks-over-time series.
+      properties:
+        date:
+          type: string
+          format: date
+        clicks:
+          type: integer
+      required:
+      - clicks
+      - date
+    DashboardStats:
+      type: object
+      properties:
+        total_links:
+          type: integer
+        active_links:
+          type: integer
+        total_clicks:
+          type: integer
+        clicks_last_30_days:
+          type: integer
+        clicks_over_time:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClickPoint'
+        last_click:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - active_links
+      - clicks_last_30_days
+      - clicks_over_time
+      - last_click
+      - total_clicks
+      - total_links
+    Link:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          description: The short-code part of the public URL. Left empty, one is generated
+            automatically.
+          maxLength: 32
+        short_url:
+          type: string
+          readOnly: true
+        destination:
+          type: string
+          format: uri
+          maxLength: 2048
+        title:
+          type: string
+          maxLength: 200
+        is_active:
+          type: boolean
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        click_count:
+          type: integer
+          readOnly: true
+          default: 0
+        last_click_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - click_count
+      - created_at
+      - destination
+      - id
+      - last_click_at
+      - short_url
+      - status
+      - updated_at
+    LinkAnalyticsResponse:
+      type: object
+      properties:
+        link:
+          $ref: '#/components/schemas/Link'
+        total_clicks:
+          type: integer
+        clicks_over_time:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClickPoint'
+        referrers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Referrer'
+        devices:
+          type: object
+          additionalProperties:
+            type: integer
+      required:
+      - clicks_over_time
+      - devices
+      - link
+      - referrers
+      - total_clicks
+    PaginatedLinkList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    PatchedLink:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          description: The short-code part of the public URL. Left empty, one is generated
+            automatically.
+          maxLength: 32
+        short_url:
+          type: string
+          readOnly: true
+        destination:
+          type: string
+          format: uri
+          maxLength: 2048
+        title:
+          type: string
+          maxLength: 200
+        is_active:
+          type: boolean
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        click_count:
+          type: integer
+          readOnly: true
+          default: 0
+        last_click_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Profile:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        date_joined:
+          type: string
+          format: date-time
+        has_api_token:
+          type: boolean
+      required:
+      - date_joined
+      - email
+      - has_api_token
+      - username
+    Referrer:
+      type: object
+      properties:
+        referrer:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - referrer
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
