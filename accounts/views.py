@@ -268,6 +268,18 @@ def profile(request):
                 request,
                 f"Signed out of {killed} other session{'s' if killed != 1 else ''}.",
             )
+        elif action == "digest":
+            from .models import UserSettings
+
+            settings_row, _ = UserSettings.objects.get_or_create(user=request.user)
+            want = request.POST.get("weekly_digest") == "on"
+            if bool(settings_row.weekly_digest) != want:
+                settings_row.weekly_digest = want
+                settings_row.save(update_fields=["weekly_digest"])
+            messages.info(
+                request,
+                "Weekly digest enabled." if want else "Weekly digest disabled.",
+            )
 
     return render(
         request,
@@ -275,6 +287,10 @@ def profile(request):
         {
             "link_count": link_count,
             "new_token": new_token,
+            "weekly_digest": bool(
+                getattr(request.user, "user_settings", None)
+                and request.user.user_settings.weekly_digest
+            ),
             "other_sessions": _other_sessions(request),
         },
     )

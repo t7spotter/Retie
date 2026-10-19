@@ -37,6 +37,8 @@ deployment, and no unnecessary infrastructure.
   page) and activate, deactivate, tag, or trash them in one POST. The
   queryset is scoped to the signed-in user, so other people's links are
   never touched.
+- **Weekly digest email**: opt in per account for a Monday email with your
+  top links and weekly non-bot clicks (cron: `manage.py send_digest`).
 - REST API at `/api/v1/` documented as OpenAPI 3 by drf-spectacular and served
   as a live docs portal (plus MCP for agents) by apiwarden at `/api/docs/`.
 - Modern responsive UI: Django templates + HTMX partial updates, Tailwind
@@ -259,6 +261,24 @@ passes:
 ```
 
 (or `docker compose run --rm app python manage.py purge_trash --days 30`).
+
+### Weekly digest email
+
+Opted-in users (profile page → "Send me the weekly digest") get an email
+every Monday with their top links and total non-bot clicks for the past
+week. Users without clicks in the week are skipped, sending nothing.
+
+Cron (Mondays 09:00):
+
+```
+0 9 * * 1 cd /srv/retie && .venv/bin/python manage.py send_digest
+```
+
+(or `docker compose run --rm app python manage.py send_digest`).
+
+Email delivery uses the standard `EMAIL_*` environment variables (see the
+table above); the default console backend prints the message to stdout so
+`send_digest` is safe to try before SMTP is configured.
 
 ### 8. Updating dependencies
 
