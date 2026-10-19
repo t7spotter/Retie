@@ -217,8 +217,21 @@ and password reset tokens) or keep it in your secrets manager.
 Also back up `.env` (contains `SECRET_KEY` — losing it invalidates sessions
 and password reset tokens) or keep it in your secrets manager.
 
-### Trash & retention
+### Link health checker (opt-in)
 
+With `LINK_HEALTH_ENABLED=true`, a scheduled job verifies each destination
+still answers and paints an OK/DOWN badge next to the link on the dashboard:
+
+```
+17 3 * * * cd /srv/retie && .venv/bin/python manage.py check_links --sleep 0.5
+```
+
+Security note: fetching URLs configured by *your users* from *your server*
+is a classic SSRF path — that's why the checker is opt-in and why blocked
+hostnames also apply. Enable only on single-operator installs or after
+you've accepted that trade-off; leaving it off changes nothing else.
+
+### Trash & retention
 Deleting a dashboard link moves it to **Trash** (status filter), where it
 can be restored with one click; trashed links stop existing publicly
 immediately. Purge them for good on a schedule once the retention window
@@ -250,6 +263,7 @@ unpkg.com/lucide).
 | `DATABASE_URL` | PostgreSQL DSN (`postgres://user:pass@host:5432/db`) |
 | `SITE_URL` | Canonical public URL used to build short links — **must include the scheme** (`https://…`); startup fails otherwise |
 | `BLOCKED_DESTINATIONS` | Comma-separated dest hosts (with their subdomains) that may never be shortenable |
+| `LINK_HEALTH_ENABLED` | `true` enables `manage.py check_links` (destination up/down badges). Off by default — see security note |
 
 ### CSV import / export
 

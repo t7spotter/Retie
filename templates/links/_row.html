@@ -5,6 +5,13 @@
       <p class="truncate font-medium text-stone-800 dark:text-stone-200" title="{{ link.title }}">{{ link.title }}</p>
     {% endif %}
     <p class="truncate text-xs text-stone-500 dark:text-stone-400" title="{{ link.destination }}">{{ link.destination }}</p>
+    {% if link.health_status %}
+      <p class="mt-0.5 flex items-center gap-1 text-[11px] {% if link.health_status == 'ok' %}text-emerald-600 dark:text-emerald-400{% else %}text-red-600 dark:text-red-400{% endif %}" title="{% if link.health_detail %}{{ link.health_detail }} — {% endif %}{{ link.destination }}">
+        <span class="h-1.5 w-1.5 rounded-full {% if link.health_status == 'ok' %}bg-emerald-500{% else %}bg-red-500{% endif %}"></span>
+        {% if link.health_status == 'ok' %}Destination up{% else %}Destination down{% endif %}
+        {% if link.health_detail %}· {{ link.health_detail }}{% endif %}
+      </p>
+    {% endif %}
     {% if link.tags.all %}
       <div class="mt-1 flex flex-wrap gap-1">
         {% for tag in link.tags.all %}<span class="rounded-full bg-indigo-50 px-1.5 py-0.5 text-[11px] text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">{{ tag.name }}</span>{% endfor %}

@@ -118,6 +118,17 @@ class Link(models.Model):
     objects = ActiveManager()  # hides trashed links from every normal lookup
     all_objects = models.Manager()  # includes trashed links (trash view, purge)
 
+    # Link health checker (manage.py check_links, opt-in).
+    health_status = models.CharField(
+        max_length=10,
+        choices=[("ok", "ok"), ("error", "error")],
+        blank=True,
+        default="",
+        db_index=True,
+    )
+    health_detail = models.CharField(max_length=200, blank=True, default="")
+    last_checked_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ["-created_at"]
         indexes = [

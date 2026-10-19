@@ -40,6 +40,11 @@ BLOCKED_DESTINATIONS = [
     e.lower() for e in env.list("BLOCKED_DESTINATIONS", default=[]) if e
 ]
 
+# Opt-in link health checker (SSRF-splash guard: checking user-provided URLs
+# from a server can be intentional exfiltration path; leave off unless you
+# want it). When true, `manage.py check_links` verifies each destination and
+# adds ok/error badges in the dashboard.
+LINK_HEALTH_ENABLED = env.bool("LINK_HEALTH_ENABLED", default=False)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "[::1]"])
 CSRF_TRUSTED_ORIGINS = [
     o for o in env.list("CSRF_TRUSTED_ORIGINS", default=[]) if o
