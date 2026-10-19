@@ -81,6 +81,13 @@ def normalize_tag_names(raw: str) -> list:
     return names
 
 
+class ActiveManager(models.Manager):
+    """Default manager that hides soft-deleted (trashed) links."""
+
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
 class Link(models.Model):
     """A shortened URL owned by one user."""
 
@@ -104,6 +111,12 @@ class Link(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Trash/undo: a soft-deleted link keeps its code (so restoring a link
+    # deleted by mistake works) but stops responding everywhere.
+    deleted_at = models.DateTimeField(null=True, blank=True, default=None)
+
+    objects = ActiveManager()  # hides trashed links from every normal lookup
+    all_objects = models.Manager()  # includes trashed links (trash view, purge)
 
     class Meta:
         ordering = ["-created_at"]

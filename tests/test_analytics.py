@@ -144,10 +144,17 @@ def test_analytics_page_only_for_owner(client_user, user, other_user):
     assert client_user.get(reverse("link_analytics", kwargs={"code": "ana2"})).status_code == 404
 
 
-def test_deleting_link_removes_clicks(client, user):
-    """CASCADE policy: analytics never outlive their link."""
+def test_deleting_link_removes_clicks_once_purged(client, user):
+    """CASCADE policy: analytics never outlive their link.
+
+    Normal delete is a soft move to trash (clicks are kept so a quick
+    restore loses nothing); the explicit purge (or trash retention job)
+    removes the click history with the link.
+    """
     link = make_link(user, code="casc1")
     _click(link)
     client.login(username="alice", password="correct-horse-42")
     client.post(reverse("link_delete", kwargs={"code": "casc1"}))
+    assert link.clicks.count() == 1  # trashed, not gone
+    client.post(reverse("link_purge", kwargs={"code": "casc1"}))
     assert link.clicks.count() == 0

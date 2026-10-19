@@ -214,6 +214,22 @@ scp server:/srv/retie/backup_2026-10-18.sql ./
 Also back up `.env` (contains `SECRET_KEY` — losing it invalidates sessions
 and password reset tokens) or keep it in your secrets manager.
 
+Also back up `.env` (contains `SECRET_KEY` — losing it invalidates sessions
+and password reset tokens) or keep it in your secrets manager.
+
+### Trash & retention
+
+Deleting a dashboard link moves it to **Trash** (status filter), where it
+can be restored with one click; trashed links stop existing publicly
+immediately. Purge them for good on a schedule once the retention window
+passes:
+
+```
+0 3 * * * cd /srv/retie && .venv/bin/python manage.py purge_trash --days 30
+```
+
+(or `docker compose run --rm app python manage.py purge_trash --days 30`).
+
 ### 8. Updating dependencies
 
 Pinned in `requirements.txt`. To update: bump a pin, run

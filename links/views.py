@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Max, Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -102,6 +103,12 @@ def _filtered_links(user, request):
     q = (request.GET.get("q") or "").strip()
     status = request.GET.get("status") or "all"
     tag = (request.GET.get("tag") or "").strip().lower()
+
+    if status == "trash":
+        # Trash is fetched from all_objects; the default manager would hide it.
+        links = Link.all_objects.filter(user=user, deleted_at__isnull=False)
+    else:
+        links = user.links.all()  # default manager: trash never leaks in
 
     if q:
         term = Q(title__icontains=q) | Q(destination__icontains=q) | Q(code__icontains=q)
@@ -437,7 +444,50 @@ def link_toggle(request, code):
 
 @login_required
 def link_delete(request, code):
+    """SOFT delete: move the link to the trash (restoreable for a while)."""
     link = get_object_or_404(Link, code=code, user=request.user)
+    if request.method == "POST":
+        link.deleted_at = timezone.now()
+        link.save(update_fields=["deleted_at", "updated_at"])
+        if _is_htmx(request):
+            from django.http import HttpResponse
+
+            response = HttpResponse(b"")
+            response["HX-Trigger"] = "links-changed"
+            return response
+        messages.success(request, "Link moved to trash.")
+    return redirect("dashboard")
+
+
+@login_required
+def link_restore(request, code):
+    link = get_object_or_404(
+        Link.all_objects, code=code, user=request.user, deleted_at__isnull=False
+    )
+    if request.method == "POST":
+        link.deleted_at = None
+        try:
+            with transaction.atomic():
+                link.save(update_fields=["deleted_at", "updated_at"])
+        except IntegrityError:
+            messages.error(request, "Another link now owns that short code; rename it first.")
+            return redirect("dashboard")
+        if _is_htmx(request):
+            from django.http import HttpResponse
+
+            response = HttpResponse(b"")
+            response["HX-Trigger"] = "links-changed"
+            return response
+        messages.success(request, "Link restored.")
+    return redirect("dashboard")
+
+
+@login_required
+def link_purge(request, code):
+    """Permanent delete (trash view only). Click history goes too."""
+    link = get_object_or_404(
+        Link.all_objects, code=code, user=request.user, deleted_at__isnull=False
+    )
     if request.method == "POST":
         link.delete()
         if _is_htmx(request):
@@ -446,7 +496,7 @@ def link_delete(request, code):
             response = HttpResponse(b"")
             response["HX-Trigger"] = "links-changed"
             return response
-        messages.success(request, "Link deleted.")
+        messages.success(request, "Link permanently deleted.")
     return redirect("dashboard")
 
 

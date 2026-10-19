@@ -16,6 +16,7 @@
       <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
       <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
       <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expired</option>
+      <option value="trash" {% if status == 'trash' %}selected{% endif %}>Trash</option>
     </select>
     <button type="submit" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">Go</button>
   </form>

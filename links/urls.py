@@ -13,6 +13,8 @@ urlpatterns = [
     path("dashboard/links/<str:code>/edit/", views.link_edit, name="link_edit"),
     path("dashboard/links/<str:code>/toggle/", views.link_toggle, name="link_toggle"),
     path("dashboard/links/<str:code>/delete/", views.link_delete, name="link_delete"),
+    path("dashboard/links/<str:code>/restore/", views.link_restore, name="link_restore"),
+    path("dashboard/links/<str:code>/purge/", views.link_purge, name="link_purge"),
     path("dashboard/links/<str:code>/analytics/", analytics_views.link_analytics, name="link_analytics"),
     # QR for a short code. Must stay above the catch-all redirect route.
     re_path(r"^(?P<code>[a-z0-9][a-z0-9-]{1,30})\.qr\.svg$", views.link_qr, name="link_qr"),
