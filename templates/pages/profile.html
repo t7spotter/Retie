@@ -3,7 +3,7 @@
 {% block title %}Profile — Retie{% endblock %}
 
 {% block body %}
-<div class="mx-auto max-w-xl px-4 py-12">
+<div class="mx-auto max-w-xl px-4 py-10 sm:px-6">
   {% if messages %}
     {% for message in messages %}
     <div class="mb-4 rounded-xl border px-3 py-2 text-sm {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300{% elif message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300{% elif message.tags == 'info' %}border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300{% else %}border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300{% endif %}">
