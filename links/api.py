@@ -40,11 +40,15 @@ class LinkViewSet(viewsets.ModelViewSet):
     lookup_field = "code"
 
     def get_queryset(self):
-        return (
+        queryset = (
             Link.objects.filter(user=self.request.user)
             .annotate(click_count=Count("clicks"), last_click_at=Max("clicks__created_at"))
             .order_by("-created_at")
         )
+        tag = (self.request.query_params.get("tag") or "").strip().lower()
+        if tag:
+            queryset = queryset.filter(tags__name=tag)
+        return queryset
 
     def get_throttles(self):
         # Only creation is rate-limited; it's the expensive/user-visible one.

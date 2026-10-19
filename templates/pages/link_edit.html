@@ -53,6 +53,17 @@
       </div>
 
       <div>
+        <label for="id_tags" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Tags</label>
+        <input type="text" name="tags" id="id_tags" value="{{ form.tags.value|default:'' }}" autocomplete="off"
+               placeholder="docs, marketing"
+               class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.tags.errors %}border-red-400{% endif %}">
+        <p class="mt-1.5 text-xs text-stone-400">Comma-separated labels; at most 5.</p>
+        {% for error in form.tags.errors %}
+        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div>
         <label for="id_expires_at" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Expires at</label>
         <input type="datetime-local" name="expires_at" id="id_expires_at"
                value="{% if form.expires_at.value %}{{ form.expires_at.value|date:'Y-m-d\TH:i' }}{% endif %}"

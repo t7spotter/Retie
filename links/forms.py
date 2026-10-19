@@ -1,16 +1,29 @@
 from django import forms
 from django.db import IntegrityError, transaction
 
-from .models import Link, generate_short_code, validate_alias, validate_destination
+from .models import Link, Tag, generate_short_code, validate_alias, validate_destination
 
 
 class LinkForm(forms.ModelForm):
     """Create/edit form shared by the dashboard views and HTMX handlers."""
 
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Used by save() to attach ownership; not part of the form itself.
+    tags = forms.CharField(
+        required=False,
+        help_text="Comma-separated labels, e.g. docs, marketing",
+        widget=forms.TextInput(attrs={"placeholder": "optional, comma-separated tags"}),
+    )
+
+    def __init__(self, *args, user=None, instance=None, **kwargs):
         self.user = user
+        self.tag_names = []
+        if instance is not None and instance.pk:
+            kwargs["initial"] = {
+                **(kwargs.get("initial") or {}),
+                "tags": ", ".join(
+                    instance.tags.order_by("name").values_list("name", flat=True)
+                ),
+            }
+        super().__init__(*args, instance=instance, **kwargs)
 
     expires_at = forms.DateTimeField(
         required=False,
@@ -43,6 +56,13 @@ class LinkForm(forms.ModelForm):
             return ""  # empty means "generate one"
         return validate_alias(code)
 
+    def clean_tags(self):
+        raw = self.cleaned_data.get("tags") or ""
+        from .models import normalize_tag_names
+
+        self.tag_names = normalize_tag_names(raw)
+        return raw
+
     def save(self, commit: bool = True) -> Link:
         """Assign a unique generated code when no alias was provided.
 
@@ -66,4 +86,11 @@ class LinkForm(forms.ModelForm):
             return link
         with transaction.atomic():
             link.save()
+            for name in self.tag_names:
+                tag, _ = Tag.objects.get_or_create(user=self.user, name=name)
+                link.tags.add(tag)
+            # Drop tags that are no longer named on the form.
+            for tag in list(link.tags.all()):
+                if tag.name not in self.tag_names:
+                    link.tags.remove(tag)
         return link

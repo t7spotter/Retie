@@ -15,7 +15,7 @@ from django.db.models import Count, Max, Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 from .forms import LinkForm
 from .models import Link
@@ -95,14 +95,18 @@ def rate_limited(scope: str, limit: int, window_seconds: int, key=None):
 
 
 def _filtered_links(user, request):
-    """Links table queryset honouring the `q` and `status` query parameters."""
+    """Links table queryset honouring the `q`, `tag` and `status` parameters."""
     links = user.links.all()
     q = (request.GET.get("q") or "").strip()
     status = request.GET.get("status") or "all"
+    tag = (request.GET.get("tag") or "").strip().lower()
 
     if q:
         term = Q(title__icontains=q) | Q(destination__icontains=q) | Q(code__icontains=q)
         links = links.filter(term)
+
+    if tag:
+        links = links.filter(tags__name=tag)
 
     if status == "active":
         links = links.filter(is_active=True).exclude(expires_at__lte=timezone.now())
@@ -111,17 +115,31 @@ def _filtered_links(user, request):
     elif status == "expired":
         links = links.filter(expires_at__lte=timezone.now())
 
-    return links.annotate(
+    return links.prefetch_related("tags").annotate(
         click_count=Count("clicks"), last_click_at=Max("clicks__created_at")
     ).order_by("-created_at")
 
 
 def _table_page(request, links):
     paginator = Paginator(links, LINKS_PER_PAGE)
+    query = (request.GET.get("q") or "").strip()
+    status = request.GET.get("status") or "all"
+    tag = (request.GET.get("tag") or "").strip().lower()
+    parts = []
+    if query:
+        parts.append(("q", query))
+    if status != "all":
+        parts.append(("status", status))
+    if tag:
+        parts.append(("tag", tag))
+    tag_names = list(request.user.tags.order_by("name").values_list("name", flat=True))
     return {
         "page_obj": paginator.get_page(request.GET.get("page")),
-        "query": (request.GET.get("q") or "").strip(),
-        "status": request.GET.get("status") or "all",
+        "query": query,
+        "status": status,
+        "tag": tag,
+        "tag_names": tag_names,
+        "table_query": urlencode(parts),
     }
 
 

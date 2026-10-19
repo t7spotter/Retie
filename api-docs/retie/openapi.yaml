@@ -454,6 +454,10 @@ components:
         status:
           type: string
           readOnly: true
+        tags:
+          type: array
+          items: {}
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -478,6 +482,7 @@ components:
       - last_click_at
       - short_url
       - status
+      - tags
       - updated_at
     LinkAnalyticsResponse:
       type: object
@@ -556,6 +561,10 @@ components:
           nullable: true
         status:
           type: string
+          readOnly: true
+        tags:
+          type: array
+          items: {}
           readOnly: true
         created_at:
           type: string

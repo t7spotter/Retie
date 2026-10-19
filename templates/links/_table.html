@@ -4,6 +4,20 @@
      hx-trigger="links-changed from:body"
      hx-target="this"
      hx-swap="outerHTML">
+  {% if tag_names %}
+  <div class="mb-3 flex flex-wrap items-center gap-2" data-tag-filter>
+    <a href="{% url 'link_table' %}?{% if query %}q={{ query|urlencode }}&{% endif %}status={{ status|urlencode }}"
+       class="rounded-full px-3 py-1 text-xs font-medium {% if not tag %}bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900{% else %}bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700{% endif %}">
+      All
+    </a>
+    {% for name in tag_names %}
+    <a href="{% url 'link_table' %}?{% if query %}q={{ query|urlencode }}&{% endif %}status={{ status|urlencode }}&tag={{ name|urlencode }}"
+       class="rounded-full px-3 py-1 text-xs font-medium {% if tag == name %}bg-indigo-600 text-white{% else %}bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900{% endif %}">
+      {{ name }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
   <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
     {% if page_obj.object_list %}
     <div class="overflow-x-auto">

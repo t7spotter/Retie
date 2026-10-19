@@ -41,6 +41,46 @@ def generate_short_code(length: int = CODE_LENGTH) -> str:
     return "".join(secrets.choice(CODE_ALPHABET) for _ in range(length))
 
 
+class Tag(models.Model):
+    """A per-user label for grouping links ("projects", "marketing", ...)."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tags")
+    name = models.CharField(max_length=32)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "name"], name="unique_tag_per_user")
+        ]
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+def normalize_tag_names(raw: str) -> list:
+    """Parse a comma/semicolon separated tags string user-typed.
+
+    Returns unique, lowercase names; raises ValidationError on a malformed
+    tag. At most 5 tags per link keep the UI honest.
+    """
+    import re
+
+    names = []
+    for part in (raw or "").replace(";", ",").split(","):
+        name = part.strip().lower()
+        if not name:
+            continue
+        if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,31}", name):
+            raise ValidationError(
+                f"Tag {name!r}: use 1-32 characters of a-z, 0-9, hyphen or underscore."
+            )
+        if name not in names:
+            names.append(name)
+    if len(names) > 5:
+        raise ValidationError("Use at most 5 tags per link.")
+    return names
+
+
 class Link(models.Model):
     """A shortened URL owned by one user."""
 
@@ -61,6 +101,7 @@ class Link(models.Model):
     title = models.CharField(max_length=200, blank=True, default="")
     is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -8,6 +8,7 @@ class LinkSerializer(serializers.ModelSerializer):
     click_count = serializers.IntegerField(read_only=True, default=0)
     status = serializers.CharField(read_only=True)
     last_click_at = serializers.DateTimeField(read_only=True)
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = Link
@@ -20,12 +21,16 @@ class LinkSerializer(serializers.ModelSerializer):
             "is_active",
             "expires_at",
             "status",
+            "tags",
             "created_at",
             "updated_at",
             "click_count",
             "last_click_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_tags(self, obj: Link) -> list:
+        return list(obj.tags.order_by("name").values_list("name", flat=True))
 
     def get_short_url(self, obj: Link) -> str:
         request = self.context.get("request")

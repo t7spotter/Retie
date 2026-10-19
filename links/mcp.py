@@ -25,7 +25,7 @@ from rest_framework.request import Request
 from analytics import queries
 from .authentication import MultiSchemeTokenAuthentication
 from .forms import LinkForm
-from .models import Link, generate_short_code
+from .models import Link, Tag, generate_short_code
 from .views import _short_url
 
 MAX_LIST_PAGE_SIZE = 50
@@ -72,6 +72,7 @@ def tool_create_link(user, args: dict) -> dict:
             "destination": args.get("destination", ""),
             "title": args.get("title", ""),
             "code": args.get("alias", ""),
+            "tags": args.get("tags", ""),
         },
         user=user,
     )
@@ -91,6 +92,9 @@ def tool_create_link(user, args: dict) -> dict:
             payload["expires_at"] = expires
         try:
             link = Link.objects.create(user=user, **payload)
+            for name in form.tag_names:
+                tag, _ = Tag.objects.get_or_create(user=user, name=name)
+                link.tags.add(tag)
         except Exception:
             if custom_alias:
                 raise ToolError("That alias is already in use.")
@@ -120,6 +124,9 @@ def tool_list_links(user, args: dict) -> dict:
             | Q(code__icontains=query)
             | Q(title__icontains=query)
         )
+    tag = (args.get("tag") or "").strip().lower()
+    if tag:
+        qs = qs.filter(tags__name=tag)
     per_page = MAX_LIST_PAGE_SIZE
     page = max(1, int(args.get("page") or 1))
     start = (page - 1) * per_page
@@ -132,6 +139,7 @@ def tool_list_links(user, args: dict) -> dict:
             "title": link.title,
             "is_active": link.is_active,
             "expires_at": link.expires_at,
+            "tags": sorted(link.tags.values_list("name", flat=True)),
             "clicks": link.click_count,
             "last_click_at": link.last_click_at,
         }
@@ -237,6 +245,7 @@ TOOLS = [
                 },
                 "alias": {"type": "string", "description": "Optional custom short code (alias)."},
                 "title": {"type": "string", "description": "Optional human-readable title."},
+                "tags": {"type": "string", "description": "Optional comma-separated tags."},
                 "expires_at": {
                     "type": "string",
                     "description": "Optional ISO 8601 expiry after which the link stops redirecting.",
@@ -253,6 +262,7 @@ TOOLS = [
             **_OBJECT,
             "properties": {
                 "query": {"type": "string", "description": "Filter by destination, alias or title."},
+                "tag": {"type": "string", "description": "Only links with this tag."},
                 "page": {"type": "integer", "description": "1-based page number."},
             },
         },
