@@ -118,6 +118,9 @@ class Link(models.Model):
     # visitor answers the password once per browser session. Stored as
     # a Django password hash — never in the clear.
     password_hash = models.CharField(max_length=255, blank=True, default="")
+    # Public shareable stats page at /stats/<code>; shows aggregate counts
+    # only, never destinations, recent clicks, or per-click detail.
+    public_stats = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

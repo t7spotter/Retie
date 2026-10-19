@@ -84,6 +84,10 @@
             <input type="checkbox" name="permanent" id="id_permanent" {% if link.permanent %}checked{% endif %}>
             Permanent redirect (301)
           </label>
+          <label for="id_public_stats" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300" title="Anyone with the URL sees aggregate clicks only — no destinations, no click lists">
+            <input type="checkbox" name="public_stats" id="id_public_stats" {% if link.public_stats %}checked{% endif %}>
+            Public stats page
+          </label>
         </div>
         <div class="mt-4 border-t border-stone-200 pt-4 dark:border-stone-800">
           <label for="id_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">

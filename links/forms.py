@@ -47,7 +47,7 @@ class LinkForm(forms.ModelForm):
 
     class Meta:
         model = Link
-        fields = ["destination", "title", "code", "expires_at", "is_active", "permanent"]
+        fields = ["destination", "title", "code", "expires_at", "is_active", "permanent", "public_stats"]
         widgets = {
             "destination": forms.URLInput(attrs={"placeholder": "https://example.com/article"}),
             "title": forms.TextInput(attrs={"placeholder": "Optional title"}),

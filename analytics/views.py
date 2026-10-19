@@ -3,7 +3,9 @@
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 from . import queries
 from links.models import Link
@@ -36,3 +38,52 @@ def link_analytics(request, code):
         "recent_clicks": link.clicks.order_by("-created_at")[:10],
     }
     return render(request, "analytics/detail.html", context)
+
+
+def public_stats(request, code):
+    """Shareable, no-login stats page for a link the owner opted in.
+
+    Deliberately aggregates only: totals, 30-day series, devices,
+    referrers, countries. Never the destination's identity, click list,
+    or per-click rows. Inactive/expired/trashed links 404 so a paused
+    link doesn't keep advertising its numbers. Rate-limited per IP
+    (120 page views/hour).
+    """
+    link = get_object_or_404(
+        Link,
+        code=code,
+        is_active=True,
+        public_stats=True,
+        deleted_at__isnull=True,
+    )
+    if link.expires_at and link.expires_at <= timezone.now():
+        raise Http404()
+
+    from links.views import rate_limited
+
+    @rate_limited("public_stats", 120, 3600)
+    def render_page(_request):
+        return _render_stats(_request, link)
+
+    return render_page(request)
+
+
+def _render_stats(request, link):
+
+    series = queries.clicks_over_time(None, days=30, link=link)
+    referrers = queries.referrer_breakdown(None, link=link, limit=5)
+    countries = queries.country_breakdown(None, link=link, limit=5)
+    max_referrer_count = max((row["count"] for row in referrers), default=0)
+
+    context = {
+        "link": link,
+        "total_clicks": link.clicks.filter(is_bot=False).count(),
+        "total_clicks_30": sum(point["clicks"] for point in series),
+        "series": series,
+        "series_json": json.dumps(series),
+        "referrers": referrers,
+        "max_referrer_count": max_referrer_count,
+        "devices": queries.device_breakdown(None, link=link),
+        "countries": countries,
+    }
+    return render(request, "analytics/public.html", context)

@@ -29,6 +29,9 @@ class LinkSerializer(serializers.ModelSerializer):
             "status",
             "tags",
             "permanent",
+            "public_stats",
+            "password",
+            "remove_password",
             "password",
             "remove_password",
             "created_at",
@@ -39,7 +42,7 @@ class LinkSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
         # DRF's BooleanField defaults to False, which would silently create
         # *inactive* links when is_active is omitted. Mirror the model default.
-        extra_kwargs = {"is_active": {"default": True}, "permanent": {"default": False}}
+        extra_kwargs = {"is_active": {"default": True}, "permanent": {"default": False}, "public_stats": {"default": False}}
 
     def get_tags(self, obj: Link) -> list:
         return list(obj.tags.order_by("name").values_list("name", flat=True))

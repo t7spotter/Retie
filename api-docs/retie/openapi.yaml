@@ -463,6 +463,9 @@ components:
           type: boolean
           default: false
           description: Respond with a permanent 301 redirect (cachable by browsers).
+        public_stats:
+          type: boolean
+          default: false
         password:
           type: string
           writeOnly: true
@@ -582,6 +585,9 @@ components:
           type: boolean
           default: false
           description: Respond with a permanent 301 redirect (cachable by browsers).
+        public_stats:
+          type: boolean
+          default: false
         password:
           type: string
           writeOnly: true

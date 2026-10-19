@@ -75,6 +75,7 @@ def tool_create_link(user, args: dict) -> dict:
             "code": args.get("alias", ""),
             "tags": args.get("tags", ""),
             "permanent": "on" if args.get("permanent") else "",
+            "public_stats": "on" if args.get("public_stats") else "",
             "password": password,
         },
         user=user,
@@ -90,6 +91,7 @@ def tool_create_link(user, args: dict) -> dict:
             "title": cleaned["title"],
             "is_active": True,
             "permanent": bool(cleaned.get("permanent", False)),
+            "public_stats": bool(cleaned.get("public_stats", False)),
         }
         if cleaned.get("password"):
             from django.contrib.auth.hashers import make_password
@@ -117,6 +119,7 @@ def tool_create_link(user, args: dict) -> dict:
         "destination": link.destination,
         "is_active": link.is_active,
         "permanent": link.permanent,
+        "public_stats": link.public_stats,
     }
 
 
@@ -167,6 +170,7 @@ def tool_get_link(user, args: dict) -> dict:
         "is_active": link.is_active,
         "expires_at": link.expires_at,
         "permanent": link.permanent,
+        "public_stats": link.public_stats,
         "total_clicks": link.clicks.count(),
     }
 
@@ -195,6 +199,9 @@ def tool_update_link(user, args: dict) -> dict:
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")
+    if "public_stats" in args:
+        link.public_stats = bool(args["public_stats"])
+        updates.append("public_stats")
     if "permanent" in args:
         link.permanent = bool(args["permanent"])
         updates.append("permanent")
@@ -275,6 +282,7 @@ TOOLS = [
                     "description": "Optional ISO 8601 expiry after which the link stops redirecting.",
                 },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
+                "public_stats": {"type": "boolean", "description": "Publish a public stats page at /stats/<code>."},
                 "permanent": {"type": "boolean", "description": "Respond with a cachable 301 redirect instead of 302. Browsers then stop reporting clicks."},
                 "password": {"type": "string", "description": "Optional gate password; visitors unlock once per browser session."},
             },
@@ -320,6 +328,7 @@ TOOLS = [
                     "description": "New expiry (ISO 8601); null removes the expiry.",
                 },
                 "is_active": {"type": "boolean", "description": "Start/stop redirecting."},
+                "public_stats": {"type": "boolean", "description": "Publish/unpublish the public stats page."},
                 "permanent": {"type": "boolean", "description": "301 (true) instead of 302."},
                 "password": {"type": "string", "description": "Set or replace the link password."},
                 "remove_password": {"type": "boolean", "description": "Remove the link password."},

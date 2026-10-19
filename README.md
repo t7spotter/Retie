@@ -30,6 +30,9 @@ deployment, and no unnecessary infrastructure.
 - **Session kill switch**: the profile page lists all browsers signed into
   the account with a "sign out everywhere else" button (useful after a
   password or 2FA change).
+- **Public stats pages**: opt-in per link at `/stats/<code>` — aggregate
+  totals, 30-day chart, devices, and top countries, with no login and no
+  click-level detail.
 - REST API at `/api/v1/` documented as OpenAPI 3 by drf-spectacular and served
   as a live docs portal (plus MCP for agents) by apiwarden at `/api/docs/`.
 - Modern responsive UI: Django templates + HTMX partial updates, Tailwind
