@@ -10,6 +10,8 @@ from pathlib import Path
 
 import environ
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Everything here can be set in a .env file (read first) or the process
@@ -25,6 +27,11 @@ SECRET_KEY = env.str(
 # The canonical public URL of this installation. Used to build short links that
 # appear in the UI and API responses. Never trust the Host header for this.
 SITE_URL = env.str("SITE_URL", default="http://localhost:8000").rstrip("/")
+if not SITE_URL.lower().startswith(("http://", "https://")):
+    raise ImproperlyConfigured(
+        f"SITE_URL must include the scheme — got {SITE_URL!r}. Set the full "
+        "public origin, e.g. 'http://127.0.0.1:8000' or 'https://links.example.com'."
+    )
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "[::1]"])
 CSRF_TRUSTED_ORIGINS = [

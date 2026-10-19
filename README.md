@@ -231,7 +231,7 @@ unpkg.com/lucide).
 | `ALLOWED_HOSTS` | Comma-separated hosts Django may serve |
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated `scheme://host` origins trusted for CSRF (HTTPS setups) |
 | `DATABASE_URL` | PostgreSQL DSN (`postgres://user:pass@host:5432/db`) |
-| `SITE_URL` | Canonical public URL used to build short links |
+| `SITE_URL` | Canonical public URL used to build short links — **must include the scheme** (`https://…`); startup fails otherwise |
 | `TIME_ZONE` | e.g. `Europe/Berlin` |
 | `SECURE_SSL_REDIRECT` | Only after HTTPS works |
 | `SECURE_HSTS_SECONDS` | e.g. 31536000 once HTTPS confirmed |
