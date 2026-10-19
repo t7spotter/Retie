@@ -93,6 +93,23 @@ class Link(models.Model):
         return "active"
 
 
+def _host_is_blocked(host: str) -> bool:
+    """True when the destination host matches the configured blocklist.
+
+    Entries match the host itself and any subdomain, so "evil.example"
+    also blocks "login.evil.example". Empty entries are ignored.
+    """
+    from django.conf import settings
+
+    host = host.lower()
+    for entry in settings.BLOCKED_DESTINATIONS:
+        entry = entry.strip().lower().lstrip("*.")
+        entry = entry.removeprefix(".")
+        if entry and (host == entry or host.endswith("." + entry)):
+            return True
+    return False
+
+
 def validate_destination(url: str) -> str:
     """Return a normalised http(s) URL or raise ValidationError.
 
@@ -112,6 +129,9 @@ def validate_destination(url: str) -> str:
         # A field-level validator must raise a plain message, not a
         # field-keyed dict; Django's form machinery adds the field itself.
         raise ValidationError("Enter a valid http:// or https:// URL.")
+
+    if _host_is_blocked(parsed.hostname or ""):
+        raise ValidationError("That destination domain is not allowed on this server.")
     return url
 
 

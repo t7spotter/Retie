@@ -33,6 +33,13 @@ if not SITE_URL.lower().startswith(("http://", "https://")):
         "public origin, e.g. 'http://127.0.0.1:8000' or 'https://links.example.com'."
     )
 
+# Destinations may never point at these hosts (or their subdomains). Use it to
+# keep your shortener from laundering phishing/malware domains.
+# Example: BLOCKED_DESTINATIONS=evil.example,bit.ly,banned.org
+BLOCKED_DESTINATIONS = [
+    e.lower() for e in env.list("BLOCKED_DESTINATIONS", default=[]) if e
+]
+
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "[::1]"])
 CSRF_TRUSTED_ORIGINS = [
     o for o in env.list("CSRF_TRUSTED_ORIGINS", default=[]) if o
