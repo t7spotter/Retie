@@ -24,6 +24,12 @@ class LinkForm(forms.ModelForm):
         help_text="Visitors must enter this once per browser session.",
     )
     remove_password = forms.BooleanField(required=False)
+    # UTM builder: appended to the destination at save time. Sending empty
+    # values (an edit without touching these) changes nothing — previously
+    # stored UTM parameters are never stripped.
+    utm_source = forms.CharField(required=False, strip=True, max_length=120)
+    utm_medium = forms.CharField(required=False, strip=True, max_length=120)
+    utm_campaign = forms.CharField(required=False, strip=True, max_length=120)
 
     def __init__(self, *args, user=None, instance=None, **kwargs):
         self.user = user
@@ -102,6 +108,28 @@ class LinkForm(forms.ModelForm):
             except IntegrityError:
                 continue
         raise IntegrityError("Could not generate a unique short code.")
+
+    def clean(self):
+        cleaned = super().clean()
+        # UTM builder: fold the optional UTM_* fields into the destination
+        # query string, preserving parameters already present there.
+        utm_parts = {
+            f"utm_{key}": value
+            for key in ("source", "medium", "campaign")
+            for value in [cleaned.get(f"utm_{key}") or ""]
+            if value
+        }
+        if utm_parts and cleaned.get("destination"):
+            from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+            split = urlsplit(cleaned["destination"])
+            existing = parse_qsl(split.query, keep_blank_values=True)
+            merged = dict(existing)
+            merged.update(utm_parts)
+            cleaned["destination"] = urlunsplit(
+                split._replace(query=urlencode(merged, doseq=True))
+            )
+        return cleaned
 
     def _save_instance(self, link: Link, commit: bool) -> Link:
         if not commit:

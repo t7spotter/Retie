@@ -13,6 +13,9 @@ deployment, and no unnecessary infrastructure.
 - **Private notes**: per-link owner-only reminders ("for the newsletter,
   kill on Friday") — visible in the dashboard edit page, API, and MCP,
   never on any public page.
+- **UTM builder**: optional source/medium/campaign fields on the create
+  form fold analytics parameters into the destination automatically,
+  preserving any existing query parameters and fragments.
 - Short links on **your own domain** (`SITE_URL`-driven, no hardcoded domains).
 - Authenticated users only — registration, login, logout, password change,
   password reset, profile.
