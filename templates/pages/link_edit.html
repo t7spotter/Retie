@@ -75,10 +75,16 @@
       </div>
 
       <div class="flex items-center justify-between pt-2">
-        <label for="id_is_active" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300">
-          <input type="checkbox" name="is_active" id="id_is_active" {% if link.is_active %}checked{% endif %}>
-          Active
-        </label>
+        <div class="flex flex-col gap-2">
+          <label for="id_is_active" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300">
+            <input type="checkbox" name="is_active" id="id_is_active" {% if link.is_active %}checked{% endif %}>
+            Active
+          </label>
+          <label for="id_permanent" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300" title="Browsers cache 301s — clicks stop being reported for this link">
+            <input type="checkbox" name="permanent" id="id_permanent" {% if link.permanent %}checked{% endif %}>
+            Permanent redirect (301)
+          </label>
+        </div>
         <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500">
           Save changes
         </button>

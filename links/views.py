@@ -517,8 +517,9 @@ def redirect_view(request, code):
     from analytics.queries import record_click
 
     record_click(link, request)
+    status = 301 if link.permanent else 302
     return HttpResponseRedirect(
         link.destination,
-        status=302,
-        headers={"Cache-Control": "no-store"},
+        status=status,
+        headers={"Cache-Control": "no-store" if status == 302 else "max-age=3600"},
     )

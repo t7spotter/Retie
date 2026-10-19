@@ -458,6 +458,9 @@ components:
           type: array
           items: {}
           readOnly: true
+        permanent:
+          type: boolean
+          description: Respond with a permanent 301 redirect (cachable by browsers).
         created_at:
           type: string
           format: date-time
@@ -566,6 +569,9 @@ components:
           type: array
           items: {}
           readOnly: true
+        permanent:
+          type: boolean
+          description: Respond with a permanent 301 redirect (cachable by browsers).
         created_at:
           type: string
           format: date-time

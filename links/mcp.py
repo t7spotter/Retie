@@ -73,6 +73,7 @@ def tool_create_link(user, args: dict) -> dict:
             "title": args.get("title", ""),
             "code": args.get("alias", ""),
             "tags": args.get("tags", ""),
+            "permanent": "on" if args.get("permanent") else "",
         },
         user=user,
     )
@@ -86,6 +87,7 @@ def tool_create_link(user, args: dict) -> dict:
             "destination": cleaned["destination"],
             "title": cleaned["title"],
             "is_active": True,
+            "permanent": bool(cleaned.get("permanent", False)),
         }
         payload["code"] = cleaned.get("code") or generate_short_code()
         if expires is not None:
@@ -108,6 +110,7 @@ def tool_create_link(user, args: dict) -> dict:
         "short_url": _short_url(link.code),
         "destination": link.destination,
         "is_active": link.is_active,
+        "permanent": link.permanent,
     }
 
 
@@ -157,6 +160,7 @@ def tool_get_link(user, args: dict) -> dict:
         "title": link.title,
         "is_active": link.is_active,
         "expires_at": link.expires_at,
+        "permanent": link.permanent,
         "total_clicks": link.clicks.count(),
     }
 
@@ -185,6 +189,9 @@ def tool_update_link(user, args: dict) -> dict:
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")
+    if "permanent" in args:
+        link.permanent = bool(args["permanent"])
+        updates.append("permanent")
     if updates:
         try:
             link.save(update_fields=[*updates, "updated_at"])
@@ -252,6 +259,7 @@ TOOLS = [
                     "description": "Optional ISO 8601 expiry after which the link stops redirecting.",
                 },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
+                "permanent": {"type": "boolean", "description": "Respond with a cachable 301 redirect instead of 302. Browsers then stop reporting clicks."},
             },
         },
         "handler": tool_create_link,

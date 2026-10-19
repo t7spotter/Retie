@@ -108,6 +108,12 @@ class Link(models.Model):
     title = models.CharField(max_length=200, blank=True, default="")
     is_active = models.BooleanField(default=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+    # 301 vs 302: analytics links must stay 302 (browsers cache 301s and
+    # stop reporting clicks); a link whose migration is done may pin 301.
+    permanent = models.BooleanField(
+        default=False,
+        help_text="Respond with a permanent 301 redirect (cachable by browsers).",
+    )
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
