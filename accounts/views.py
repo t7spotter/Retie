@@ -12,6 +12,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 import io
@@ -254,9 +255,48 @@ def profile(request):
         elif action == "revoke_api_key":
             Token.objects.filter(user=request.user).delete()
             messages.info(request, "API key revoked. Any scripts using it stopped working.")
+        elif action == "sign_out_elsewhere":
+            from django.contrib.sessions.models import Session
+
+            current = request.session.session_key
+            killed = 0
+            for session in _user_sessions(request.user):
+                if session.session_key != current:
+                    session.delete()
+                    killed += 1
+            messages.info(
+                request,
+                f"Signed out of {killed} other session{'s' if killed != 1 else ''}.",
+            )
 
     return render(
         request,
         "pages/profile.html",
-        {"link_count": link_count, "new_token": new_token},
+        {
+            "link_count": link_count,
+            "new_token": new_token,
+            "other_sessions": _other_sessions(request),
+        },
     )
+
+
+def _user_sessions(user, exclude_key=None):
+    """Session model rows belonging to `user` that are still valid."""
+    from django.contrib.sessions.models import Session
+
+    sessions = []
+    for session in Session.objects.filter(expire_date__gte=timezone.now()):
+        decoded = session.get_decoded()
+        if str(decoded.get("_auth_user_id", "")) == str(user.pk):
+            if exclude_key and session.session_key == exclude_key:
+                continue
+            sessions.append(session)
+    return sessions
+
+
+def _other_sessions(request):
+    """Template-safe view of the user's *other* login sessions."""
+    return [
+        {"key": session.session_key, "expires": session.expire_date}
+        for session in _user_sessions(request.user, exclude_key=request.session.session_key)
+    ]
