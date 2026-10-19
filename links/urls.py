@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 
 from analytics import views as analytics_views
 from . import views
@@ -14,6 +14,8 @@ urlpatterns = [
     path("dashboard/links/<str:code>/toggle/", views.link_toggle, name="link_toggle"),
     path("dashboard/links/<str:code>/delete/", views.link_delete, name="link_delete"),
     path("dashboard/links/<str:code>/analytics/", analytics_views.link_analytics, name="link_analytics"),
+    # QR for a short code. Must stay above the catch-all redirect route.
+    re_path(r"^(?P<code>[a-z0-9][a-z0-9-]{1,30})\.qr\.svg$", views.link_qr, name="link_qr"),
     # This must stay last: it is the catch-all public redirect route.
     path("<str:code>", views.redirect_view, name="redirect"),
 ]

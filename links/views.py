@@ -20,6 +20,8 @@ from urllib.parse import urlencode, urlsplit
 from .forms import LinkForm
 from .models import Link
 
+import segno
+
 LINKS_PER_PAGE = 10
 
 
@@ -181,6 +183,33 @@ def link_table(request):
         "links/_table.html",
         _table_page(request, _filtered_links(request.user, request)),
     )
+
+
+@rate_limited("qr", limit=120, window_seconds=60, key=lambda r: r.META.get("REMOTE_ADDR") or "")
+def link_qr(request, code: str):
+    """An SVG QR code pointing at your short URL.
+
+    Public like the redirect itself — QRs get printed and posted where
+    browser auth is impossible — but rate-limited so bots can't enumerate
+    codes by brute-forcing this endpoint. no-store so a regenerated alias
+    shows up immediately.
+    """
+    from django.shortcuts import get_object_or_404
+
+    link = get_object_or_404(Link, code=code)
+    buffer = io.BytesIO()
+    segno.make(f"{settings.SITE_URL}/{link.code}", error="m").save(
+        buffer,
+        kind="svg",
+        scale=8,
+        border=2,
+        dark="#0e353c",
+        light="#ffffff",
+    )
+    response = HttpResponse(buffer.getvalue(), content_type="image/svg+xml")
+    response["Cache-Control"] = "no-store"
+    response["Content-Disposition"] = f"inline; filename=qr-{link.code}.svg"
+    return response
 
 
 @login_required
