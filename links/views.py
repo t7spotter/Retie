@@ -383,6 +383,23 @@ def link_export(request):
     return response
 
 
+def _duplicate_destination_code(form):
+    """Short code of an existing non-trashed link pointing at the same
+    destination, or '' when the destination is unique (or it's the same
+    row being edited)."""
+    user = getattr(form, "user", None)
+    destination = form.cleaned_data.get("destination")
+    if not user or not destination:
+        return ""
+    from .models import Link
+
+    existing = Link.objects.filter(
+        user=user, destination=destination, deleted_at__isnull=True
+    ).exclude(pk=getattr(form.instance, "pk", None) or None)
+    link = existing.first()
+    return link.code if link else ""
+
+
 @login_required
 @rate_limited("link_create", limit=60, window_seconds=3600, key=lambda r: r.user.pk)
 def link_create(request):
@@ -393,14 +410,21 @@ def link_create(request):
 
     form = LinkForm(request.POST)
     form.user = request.user
+    duplicate_code = ""
     created = form.is_valid()
     if created:
-        form.save()
+        duplicate_code = _duplicate_destination_code(form)
+        if duplicate_code and not form.cleaned_data.get("confirm_duplicate"):
+            created = False  # hold the link until the user confirms
+        else:
+            form.save()
 
     if _is_htmx(request):
         context = {"form": LinkForm() if created else form, "created": created}
         if created:
             context["created_url"] = _short_url(form.instance.code)
+        elif duplicate_code:
+            context["duplicate_code"] = duplicate_code
         response = render(request, "links/_form.html", context)
         if created:
             response["HX-Trigger"] = "links-changed"
@@ -409,11 +433,10 @@ def link_create(request):
     if created:
         messages.success(request, f"Short link /{form.instance.code} created.")
         return redirect("dashboard")
-    return render(
-        request,
-        "pages/dashboard.html",
-        {"form": form, "panel_only_form": True, **_dashboard_context(request)},
-    )
+    context = {"form": form, "panel_only_form": True, **_dashboard_context(request)}
+    if duplicate_code:
+        context["duplicate_code"] = duplicate_code
+    return render(request, "pages/dashboard.html", context)
 
 
 @login_required
@@ -423,6 +446,13 @@ def link_edit(request, code):
         form = LinkForm(request.POST, instance=link)
         form.user = request.user
         if form.is_valid():
+            duplicate_code = _duplicate_destination_code(form)
+            if duplicate_code and not form.cleaned_data.get("confirm_duplicate"):
+                return render(
+                    request,
+                    "pages/link_edit.html",
+                    {"form": form, "link": link, "duplicate_code": duplicate_code},
+                )
             form.save()
             messages.success(request, "Link updated.")
             return redirect("dashboard")

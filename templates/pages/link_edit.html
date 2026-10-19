@@ -17,6 +17,17 @@
     <form method="post" action="{% url 'link_edit' link.code %}" class="mt-6 space-y-4">
       {% csrf_token %}
 
+      {% if duplicate_code %}
+      <input type="hidden" name="confirm_duplicate" value="on">
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-900 dark:bg-amber-950/60">
+        <p class="font-medium text-amber-800 dark:text-amber-300">
+          <i data-lucide="alert-triangle" class="mr-1 inline h-4 w-4"></i>
+          Another short link, /{{ duplicate_code }}, already points to this destination.
+        </p>
+        <p class="mt-1 text-amber-700 dark:text-amber-400">"Save changes" will now save anyway.</p>
+      </div>
+      {% endif %}
+
       {% if form.non_field_errors %}
       <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/60 dark:text-red-400">{{ form.non_field_errors }}</div>
       {% endif %}
@@ -112,7 +123,7 @@
           {% endif %}
         </div>
         <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500">
-          Save changes
+          Save changes{% if duplicate_code %} anyway{% endif %}
         </button>
       </div>
     </form>

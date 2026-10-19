@@ -30,6 +30,9 @@ class LinkForm(forms.ModelForm):
     utm_source = forms.CharField(required=False, strip=True, max_length=120)
     utm_medium = forms.CharField(required=False, strip=True, max_length=120)
     utm_campaign = forms.CharField(required=False, strip=True, max_length=120)
+    # Set by the "create anyway" button after a duplicate-destination
+    # warning; never rendered on the initial form.
+    confirm_duplicate = forms.BooleanField(required=False)
 
     def __init__(self, *args, user=None, instance=None, **kwargs):
         self.user = user

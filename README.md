@@ -16,6 +16,10 @@ deployment, and no unnecessary infrastructure.
 - **UTM builder**: optional source/medium/campaign fields on the create
   form fold analytics parameters into the destination automatically,
   preserving any existing query parameters and fragments.
+- **Duplicate-destination warning**: creating or editing a link to a
+  destination another of your links already points at shows a warning
+  with a "create/save anyway" confirmation step; trashed duplicates
+  don't trigger it. The API and MCP never block on duplicates.
 - Short links on **your own domain** (`SITE_URL`-driven, no hardcoded domains).
 - Authenticated users only — registration, login, logout, password change,
   password reset, profile.
