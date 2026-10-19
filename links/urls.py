@@ -10,6 +10,7 @@ urlpatterns = [
     path("dashboard/links/import/", views.link_import, name="link_import"),
     path("dashboard/links/export.csv", views.link_export, name="link_export"),
     path("dashboard/links/new/", views.link_create, name="link_create"),
+    path("dashboard/links/bulk/", views.link_bulk, name="link_bulk"),
     path("dashboard/links/<str:code>/edit/", views.link_edit, name="link_edit"),
     path("dashboard/links/<str:code>/toggle/", views.link_toggle, name="link_toggle"),
     path("dashboard/links/<str:code>/delete/", views.link_delete, name="link_delete"),

@@ -103,6 +103,24 @@
         <section id="links-section" aria-label="Your links">
           {% include "links/_search_bar.html" %}
           {% include "links/_table.html" %}
+
+          <!-- Bulk actions bar (app.js shows it once rows are selected) -->
+          <form id="bulk-bar" method="post" action="{% url 'link_bulk' %}"
+                class="sticky bottom-4 mt-4 hidden items-center gap-3 rounded-2xl border border-stone-700 bg-stone-900/95 p-3 text-sm text-white shadow-lg dark:bg-neutral-900/95">
+            {% csrf_token %}
+            <input type="hidden" name="codes" id="bulk-codes" value="">
+            <span id="bulk-count" class="font-medium">0 selected</span>
+            <button type="submit" name="action" value="activate"
+                    class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-medium hover:bg-emerald-500">Activate</button>
+            <button type="submit" name="action" value="deactivate"
+                    class="rounded-xl bg-stone-700 px-3 py-1.5 text-xs font-medium hover:bg-stone-600">Deactivate</button>
+            <button type="submit" name="action" value="tag"
+                    class="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium hover:bg-indigo-500">Tag</button>
+            <input type="text" name="tag" placeholder="tag names, comma-separated"
+                   class="w-44 rounded-xl border border-stone-600 bg-stone-800 px-2.5 py-1.5 text-xs text-white placeholder-stone-400 focus:border-indigo-500 focus:outline-none">
+            <button type="submit" name="action" value="trash"
+                    class="rounded-xl bg-red-700 px-3 py-1.5 text-xs font-medium hover:bg-red-600">Trash</button>
+          </form>
         </section>
 
         <!-- Right column: chart + create form -->

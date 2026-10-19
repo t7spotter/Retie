@@ -21,7 +21,7 @@ from django.utils import timezone
 from urllib.parse import urlencode, urlsplit
 
 from .forms import LinkForm
-from .models import Link
+from .models import Link, normalize_tag_names
 
 import segno
 
@@ -458,6 +458,74 @@ def link_delete(request, code):
             response["HX-Trigger"] = "links-changed"
             return response
         messages.success(request, "Link moved to trash.")
+    return redirect("dashboard")
+
+
+@login_required
+def link_bulk(request):
+    """Apply one action to several of the current user's own links at once.
+
+    Actions: activate, deactivate, trash, tag (with `tag` = comma/semi
+    separated names). Silently ignores codes that exist but belong to
+    someone else, are trashed, or don't exist — the queryset is scoped
+    to the caller first, so no cross-user leakage is possible.
+    """
+    if request.method != "POST":
+        raise PermissionDenied("Use POST.")
+
+    action = request.POST.get("action", "")
+    raw_codes = [c.strip() for c in request.POST.get("codes", "").split(",") if c.strip()]
+    if not action or not raw_codes:
+        messages.warning(request, "No links selected.")
+        return redirect("dashboard")
+
+    links = list(
+        Link.objects.filter(
+            user=request.user, code__in=raw_codes, deleted_at__isnull=True
+        )
+    )
+
+    if action == "activate":
+        updated = [link for link in links if not link.is_active]
+        for link in updated:
+            link.is_active = True
+        if updated:
+            Link.objects.bulk_update(updated, ["is_active"])
+        messages.success(request, f"{len(updated)} link{'s' if len(updated) != 1 else ''} activated.")
+    elif action == "deactivate":
+        updated = [link for link in links if link.is_active]
+        for link in updated:
+            link.is_active = False
+        if updated:
+            Link.objects.bulk_update(updated, ["is_active"])
+        messages.success(request, f"{len(updated)} link{'s' if len(updated) != 1 else ''} deactivated.")
+    elif action == "trash":
+        now = timezone.now()
+        for link in links:
+            link.deleted_at = now
+        if links:
+            Link.objects.bulk_update(links, ["deleted_at"])
+        messages.info(request, f"{len(links)} link{'s' if len(links) != 1 else ''} moved to trash.")
+    elif action == "tag":
+        try:
+            tag_names = normalize_tag_names(request.POST.get("tag", ""))
+        except Exception:
+            messages.error(request, "Invalid tag name.")
+            return redirect("dashboard")
+        if not tag_names:
+            messages.warning(request, "No tag given.")
+            return redirect("dashboard")
+        from .models import Tag
+
+        for tag_name in tag_names:
+            tag, _ = Tag.objects.get_or_create(user=request.user, name=tag_name)
+            for link in links:
+                link.tags.add(tag)
+        messages.success(request, f"Tagged {len(links)} link{'s' if len(links) != 1 else ''}.")
+    else:
+        messages.error(request, "Unknown bulk action.")
+        return redirect("dashboard")
+
     return redirect("dashboard")
 
 

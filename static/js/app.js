@@ -180,7 +180,58 @@
   // Redraw icons after HTMX overwrites page fragments.
   document.body.addEventListener("htmx:afterSwap", function (event) {
     refreshIcons(event.target);
+    refreshBulkBar(); // rows were re-rendered; resync selection bar
   });
+
+  // ---- Bulk selection ---------------------------------------------------
+
+  function bulkBar() { return document.getElementById("bulk-bar"); }
+
+  function bulkCodes() {
+    return qsa('input[name="bulk-code"]:checked').map(function (box) {
+      return box.value;
+    });
+  }
+
+  function refreshBulkBar() {
+    var bar = bulkBar();
+    if (!bar) return;
+    var codes = bulkCodes();
+    bar.classList.toggle("hidden", codes.length === 0);
+    bar.classList.toggle("flex", codes.length > 0);
+    var count = document.getElementById("bulk-count");
+    if (count) count.textContent = codes.length + " selected";
+    var field = document.getElementById("bulk-codes");
+    if (field) field.value = codes.join(",");
+  }
+
+  // Delegated so checkboxes inside HTMX-refreshed rows keep working.
+  document.addEventListener("change", function (event) {
+    if (event.target.name === "bulk-code") {
+      refreshBulkBar();
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    var toggleAll = event.target.closest("[data-bulk-toggle-all]");
+    if (!toggleAll) return;
+    qsa('input[name="bulk-code"]').forEach(function (box) {
+      box.checked = toggleAll.checked;
+    });
+    refreshBulkBar();
+  });
+
+  // Reset selection state after a bulk action reloads the dashboard.
+  if (bulkBar()) {
+    bulkBar().addEventListener("submit", function () {
+      qsa('input[name="bulk-code"]').forEach(function (box) {
+        box.checked = false;
+      });
+      var toggle = document.querySelector("[data-bulk-toggle-all]");
+      if (toggle) toggle.checked = false;
+      refreshBulkBar();
+    });
+  }
 
   document.body.addEventListener("links-changed", function () {
     // Table region refetches itself via its own hx-trigger; nothing else needed.

@@ -33,6 +33,10 @@ deployment, and no unnecessary infrastructure.
 - **Public stats pages**: opt-in per link at `/stats/<code>` — aggregate
   totals, 30-day chart, devices, and top countries, with no login and no
   click-level detail.
+- **Bulk actions**: select several links on the dashboard (or the whole
+  page) and activate, deactivate, tag, or trash them in one POST. The
+  queryset is scoped to the signed-in user, so other people's links are
+  never touched.
 - REST API at `/api/v1/` documented as OpenAPI 3 by drf-spectacular and served
   as a live docs portal (plus MCP for agents) by apiwarden at `/api/docs/`.
 - Modern responsive UI: Django templates + HTMX partial updates, Tailwind

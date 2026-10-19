@@ -1,5 +1,10 @@
 {% load humanize %}
 <tr id="link-{{ link.code }}" class="border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/80 dark:border-stone-800/60 dark:hover:bg-stone-800/40">
+  <td class="w-10 px-2 py-3.5">
+    <input type="checkbox" name="bulk-code" value="{{ link.code }}" data-bulk-code
+           class="rounded border-stone-300 text-indigo-600 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800"
+           aria-label="Select link {{ link.code }}">
+  </td>
   <td class="max-w-[220px] px-5 py-3.5">
     {% if link.title %}
       <p class="truncate font-medium text-stone-800 dark:text-stone-200" title="{{ link.title }}">{{ link.title }}</p>
