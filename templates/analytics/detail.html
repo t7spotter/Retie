@@ -23,6 +23,13 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
+        <a href="{% if bots %}{% url 'link_analytics' link.code %}{% else %}{% url 'link_analytics' link.code %}?bots=1{% endif %}"
+           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+           title="{% if bots %}Hide known bot clicks{% else %}Include known bot clicks{% endif %}">
+          <i data-lucide="{% if bots %}bot-off{% else %}bot{% endif %}" class="h-4 w-4"></i>
+          {% if bots %}Bots shown{% else %}Include bots{% endif %}
+          {% if bot_clicks %}<span class="rounded-full bg-stone-100 px-1.5 text-xs dark:bg-stone-800">{{ bot_clicks }}</span>{% endif %}
+        </a>
         <button type="button" data-copy="{{ SITE_URL }}/{{ link.code }}"
                 class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
           <i data-lucide="copy" class="h-4 w-4"></i> Copy

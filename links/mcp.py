@@ -209,13 +209,15 @@ def tool_delete_link(user, args: dict) -> dict:
 def tool_get_link_analytics(user, args: dict) -> dict:
     link = _user_link(user, args["code"])
     days = min(MAX_ANALYTICS_DAYS, max(1, int(args.get("days") or 30)))
+    include_bots = bool(args.get("bots", False))
     return {
         "code": link.code,
         "total_clicks": link.clicks.count(),
-        "clicks_over_time": queries.clicks_over_time(user, days, link=link),
-        "referrers": queries.referrer_breakdown(user, link=link, limit=8),
-        "devices": queries.device_breakdown(user, link=link),
-        "countries": queries.country_breakdown(user, link=link),
+        "bot_clicks": link.clicks.filter(is_bot=True).count(),
+        "clicks_over_time": queries.clicks_over_time(user, days, link=link, include_bots=include_bots),
+        "referrers": queries.referrer_breakdown(user, link=link, limit=8, include_bots=include_bots),
+        "devices": queries.device_breakdown(user, link=link, include_bots=include_bots),
+        "countries": queries.country_breakdown(user, link=link, include_bots=include_bots),
     }
 
 
@@ -319,13 +321,14 @@ TOOLS = [
     },
     {
         "name": "get_link_analytics",
-        "description": "Aggregated analytics for one of your links: clicks over time, referrers, devices.",
+        "description": "Aggregated analytics for one of your links: clicks over time, referrers, devices, countries. Known bot clicks are excluded by default.",
         "inputSchema": {
             **_OBJECT,
             "required": ["code"],
             "properties": {
                 "code": {"type": "string"},
                 "days": {"type": "integer", "description": "Window in days, default 30, max 90."},
+                "bots": {"type": "boolean", "description": "Include known bot clicks (default false)."},
             },
         },
         "handler": tool_get_link_analytics,

@@ -40,6 +40,9 @@ class ClickEvent(models.Model):
     # time*; the IP itself is never stored. Blank when geo data is not
     # configured or the address is private/unknown.
     country = models.CharField(max_length=2, blank=True, default="")
+    # Coarse bot flag from the user-agent at click time. Excluded from
+    # analytics by default (toggle `?bots=1` includes them everywhere).
+    is_bot = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         ordering = ["-created_at"]

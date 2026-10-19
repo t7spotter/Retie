@@ -27,6 +27,34 @@ def device_category(user_agent: str) -> str:
     return ClickEvent.DEVICE_DESKTOP
 
 
+# Coarse bot detection — deliberately blunt. Real browsers send a User-Agent;
+# these tokens catch the popular crawlers and CLI tools without pretending to
+# be a full filter. Clicks flagged here are excluded from analytics by default
+# and the flag is stored so an operator can still inspect them.
+BOT_UA_TOKENS = (
+    "bot",
+    "crawler",
+    "spider",
+    "slurp",
+    "curl",
+    "wget",
+    "python",
+    "httpx",
+    "headless",
+    "lighthouse",
+    "facebookexternalhit",
+    "uptime",
+    "monitor",
+    "scanner",
+    "prefetch",
+)
+
+
+def looks_like_bot(user_agent: str) -> bool:
+    ua = (user_agent or "").lower()
+    return any(token in ua for token in BOT_UA_TOKENS)
+
+
 def record_click(link, request) -> ClickEvent:
     """Persist one redirect event for `link`.
 
@@ -36,11 +64,14 @@ def record_click(link, request) -> ClickEvent:
     """
     from links.geo import country_for
 
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
+
     return ClickEvent.objects.create(
         link=link,
         referrer=request.META.get("HTTP_REFERER", "")[:2048],
-        device=device_category(request.META.get("HTTP_USER_AGENT", "")),
+        device=device_category(user_agent),
         country=country_for(request.META.get("REMOTE_ADDR", "")),
+        is_bot=looks_like_bot(user_agent),
     )
 
 
@@ -50,25 +81,32 @@ def is_active_q():
 
 
 def user_totals(user) -> dict:
-    """Headline numbers for the dashboard, across all owned links."""
+    """Headline numbers for the dashboard, across all owned links.
+
+    Bot clicks are excluded from the headline counts (their volumes would
+    dwarf real traffic); links/totals themselves count everything.
+    """
+    no_bots = Q(clicks__is_bot=False)
     return user.links.aggregate(
         total_links=Count("id", distinct=True),
         active_links=Count("id", distinct=True, filter=is_active_q()),
-        total_clicks=Count("clicks"),
-        last_click=Max("clicks__created_at"),
+        total_clicks=Count("clicks", filter=no_bots),
+        last_click=Max("clicks__created_at", filter=no_bots),
     )
 
 
-def clicks_over_time(user, days: int = 30, link=None) -> list:
+def clicks_over_time(user, days: int = 30, link=None, include_bots: bool = False) -> list:
     """Clicks bucketed per day for the last `days` days.
 
     Returns [{"date": "YYYY-MM-DD", "clicks": n}] with zero counts filled in
-    so charts show a continuous axis.
+    so charts show a continuous axis. Bot clicks excluded by default.
     """
     start = timezone.now() - timezone.timedelta(days=days - 1)
     start = start.replace(hour=0, minute=0, second=0, microsecond=0)
 
     clicks = ClickEvent.objects.filter(created_at__gte=start)
+    if not include_bots:
+        clicks = clicks.exclude(is_bot=True)
     if link is not None:
         clicks = clicks.filter(link=link)
     else:
@@ -86,10 +124,12 @@ def clicks_over_time(user, days: int = 30, link=None) -> list:
     return series
 
 
-def referrer_breakdown(user, link=None, limit: int = 8) -> list:
+def referrer_breakdown(user, link=None, limit: int = 8, include_bots: bool = False) -> list:
     clicks = ClickEvent.objects.filter(link__user=user)
     if link is not None:
         clicks = clicks.filter(link=link)
+    if not include_bots:
+        clicks = clicks.exclude(is_bot=True)
     return list(
         clicks.exclude(referrer="")
         .values("referrer")
@@ -98,16 +138,18 @@ def referrer_breakdown(user, link=None, limit: int = 8) -> list:
     )
 
 
-def device_breakdown(user, link=None) -> dict:
+def device_breakdown(user, link=None, include_bots: bool = False) -> dict:
     """Map of device category -> click count for convenience in templates."""
     clicks = ClickEvent.objects.filter(link__user=user)
     if link is not None:
         clicks = clicks.filter(link=link)
+    if not include_bots:
+        clicks = clicks.exclude(is_bot=True)
     rows = clicks.values("device").annotate(count=Count("id")).order_by("-count")
     return {row["device"]: row["count"] for row in rows}
 
 
-def country_breakdown(user, link=None, limit: int = 8) -> list:
+def country_breakdown(user, link=None, limit: int = 8, include_bots: bool = False) -> list:
     """Top countries among recorded clicks (by two-letter code).
 
     Empty codes are left out; unknown-country clicks exist whenever geo
@@ -116,6 +158,8 @@ def country_breakdown(user, link=None, limit: int = 8) -> list:
     clicks = ClickEvent.objects.filter(link__user=user).exclude(country="")
     if link is not None:
         clicks = clicks.filter(link=link)
+    if not include_bots:
+        clicks = clicks.exclude(is_bot=True)
     return list(
         clicks.values("country")
         .annotate(count=Count("id"))

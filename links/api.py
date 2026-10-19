@@ -128,14 +128,22 @@ class LinkAnalyticsView(APIView):
             link = Link.objects.get(code=code, user=request.user)
         except Link.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        include_bots = request.query_params.get("bots") == "1"
         return Response(
             {
                 "link": LinkSerializer(link).data,
                 "total_clicks": link.clicks.count(),
-                "clicks_over_time": queries.clicks_over_time(request.user, 30, link=link),
-                "referrers": queries.referrer_breakdown(request.user, link=link, limit=8),
-                "devices": queries.device_breakdown(request.user, link=link),
-                "countries": queries.country_breakdown(request.user, link=link),
+                "bot_clicks": link.clicks.filter(is_bot=True).count(),
+                "clicks_over_time": queries.clicks_over_time(
+                    request.user, 30, link=link, include_bots=include_bots
+                ),
+                "referrers": queries.referrer_breakdown(
+                    request.user, link=link, limit=8, include_bots=include_bots
+                ),
+                "devices": queries.device_breakdown(request.user, link=link, include_bots=include_bots),
+                "countries": queries.country_breakdown(
+                    request.user, link=link, include_bots=include_bots
+                ),
             }
         )
 
