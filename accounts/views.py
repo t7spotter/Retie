@@ -6,7 +6,7 @@ custom templates (wired in accounts/urls.py).
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
@@ -21,7 +21,7 @@ import segno
 
 from links.views import rate_limited
 
-from .forms import RegisterForm
+from .forms import RegisterForm, RetieLoginForm
 
 LOGIN_LIMIT = rate_limited("login", limit=25, window_seconds=300)
 REGISTER_LIMIT = rate_limited("register", limit=10, window_seconds=3600)
@@ -54,7 +54,7 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
+        form = RetieLoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             two = getattr(user, "two_factor", None)
@@ -65,7 +65,7 @@ def login_view(request):
             auth_login(request, user)
             return redirect(request.GET.get("next") or "dashboard")
     else:
-        form = AuthenticationForm()
+        form = RetieLoginForm()
     return render(request, "registration/login.html", {"form": form})
 
 
