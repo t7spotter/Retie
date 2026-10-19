@@ -34,6 +34,7 @@ deployment, and no unnecessary infrastructure.
 | Database   | PostgreSQL (psycopg 3)                              |
 | Frontend   | Django templates, HTMX, Tailwind CSS, Lucide, Chart.js |
 | Docs       | drf-spectacular (schema) + apiwarden (docs portal, MCP) |
+| Agents     | MCP server at `/mcp/` (Streamable HTTP, API-key auth) + docs MCP at `/api/docs/mcp` |
 | Serving    | Gunicorn + WhiteNoise (static), Docker Compose      |
 | Tests      | pytest + pytest-django                              |
 
@@ -317,6 +318,57 @@ curl -H "Authorization: Bearer $KEY" https://links.example.com/api/v1/links/ \
 
 (Operators can also mint a key directly with
 `.venv/bin/python manage.py drf_create_token alice`.)
+
+## MCP server (agent access)
+
+`/mcp/` implements the Model Context Protocol (Streamable HTTP transport) so
+AI agents — Claude Desktop, Claude Code, Cursor, OpenCode — can create and
+manage short links directly, with the same rules as the REST API:
+
+- **Auth is an API key**: send `Authorization: Bearer <key>` (or `Token <key>`)
+  with every request; unauthenticated requests get 401.
+- **Ownership isolation**: a key only ever sees and touches its own user's
+  links; the tools are user-scoped end to end.
+- **Same validation**: destinations must be http(s), aliases 2–31 chars of
+  a-z/0-9/hyphen, reserved aliases rejected.
+- No new dependencies — it is plain JSON-RPC 2.0 over HTTP POST.
+
+Tools exposed: `create_link`, `list_links`, `get_link`, `update_link`,
+`delete_link`, `get_link_analytics`, `get_dashboard_stats`.
+
+Client configuration (Claude Desktop / any MCP client that supports HTTP
+servers):
+
+```json
+{
+  "mcpServers": {
+    "retie": {
+      "type": "http",
+      "url": "https://links.example.com/mcp/",
+      "headers": { "Authorization": "Bearer YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+Or with Claude Code:
+
+```bash
+claude mcp add --transport http retie https://links.example.com/mcp/ \
+  --header "Authorization: Bearer YOUR_API_KEY"
+```
+
+Handshake smoke test without a client:
+
+```bash
+KEY=...
+curl -X POST https://links.example.com/mcp/ \
+  -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"initialize","id":1,"params":{"protocolVersion":"2025-03-26"}}'
+```
+
+(A second, docs-only MCP surface lives at `/api/docs/mcp` — it exposes the
+API documentation for agents to read, never your data.)
 
 ## Tests
 
