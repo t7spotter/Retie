@@ -18,6 +18,12 @@
       <a href="{% url 'profile' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
         <i data-lucide="user" class="h-4 w-4"></i> Profile
       </a>
+      <a href="{% url 'link_import' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <i data-lucide="upload" class="h-4 w-4"></i> Import CSV
+      </a>
+      <a href="{% url 'link_export' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
+        <i data-lucide="download" class="h-4 w-4"></i> Export CSV
+      </a>
       <div class="mt-2 border-t border-stone-200 pt-3 dark:border-stone-800">
         <button type="button" data-theme-toggle class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
           <i data-lucide="moon-star" class="h-4 w-4"></i> <span data-theme-label>Toggle theme</span>

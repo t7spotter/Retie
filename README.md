@@ -234,6 +234,13 @@ unpkg.com/lucide).
 | `DATABASE_URL` | PostgreSQL DSN (`postgres://user:pass@host:5432/db`) |
 | `SITE_URL` | Canonical public URL used to build short links — **must include the scheme** (`https://…`); startup fails otherwise |
 | `BLOCKED_DESTINATIONS` | Comma-separated dest hosts (with their subdomains) that may never be shortenable |
+
+### CSV import / export
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/dashboard/links/export.csv` | All your links as CSV (backup / migration away easy) |
+| GET/POST | `/dashboard/links/import/` | Bulk-create from a CSV upload (bit.ly/short.io headers understood) |
 | `TIME_ZONE` | e.g. `Europe/Berlin` |
 | `SECURE_SSL_REDIRECT` | Only after HTTPS works |
 | `SECURE_HSTS_SECONDS` | e.g. 31536000 once HTTPS confirmed |
