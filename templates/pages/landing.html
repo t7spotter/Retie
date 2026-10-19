@@ -13,6 +13,11 @@
         Retie
       </a>
       <nav class="flex items-center gap-2 sm:gap-4">
+        <button type="button" data-theme-toggle
+                class="grid h-9 w-9 place-items-center rounded-lg text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                aria-label="Toggle dark mode" title="Toggle dark mode">
+          <i data-lucide="moon-star" class="h-4 w-4"></i>
+        </button>
         <a href="{% url 'login' %}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">Log in</a>
         <a href="{% url 'register' %}" class="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500">Create account</a>
       </nav>

@@ -11,6 +11,8 @@ def test_landing_shown_to_visitors_by_default(client):
     response = client.get("/")
     assert response.status_code == 200
     assert b"Get started" in response.content  # marketing CTA
+    # Visitors can pick their theme before signing up.
+    assert b"data-theme-toggle" in response.content
 
 
 def test_landing_marks_signed_in_users_to_dashboard(client, user):
