@@ -447,6 +447,7 @@ components:
           maxLength: 200
         is_active:
           type: boolean
+          default: true
         expires_at:
           type: string
           format: date-time
@@ -460,7 +461,14 @@ components:
           readOnly: true
         permanent:
           type: boolean
+          default: false
           description: Respond with a permanent 301 redirect (cachable by browsers).
+        password:
+          type: string
+          writeOnly: true
+        remove_password:
+          type: boolean
+          writeOnly: true
         created_at:
           type: string
           format: date-time
@@ -558,6 +566,7 @@ components:
           maxLength: 200
         is_active:
           type: boolean
+          default: true
         expires_at:
           type: string
           format: date-time
@@ -571,7 +580,14 @@ components:
           readOnly: true
         permanent:
           type: boolean
+          default: false
           description: Respond with a permanent 301 redirect (cachable by browsers).
+        password:
+          type: string
+          writeOnly: true
+        remove_password:
+          type: boolean
+          writeOnly: true
         created_at:
           type: string
           format: date-time

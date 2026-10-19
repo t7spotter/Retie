@@ -67,6 +67,7 @@ def _form_errors(form) -> str:
 
 def tool_create_link(user, args: dict) -> dict:
     expires = _parse_expires(args["expires_at"]) if args.get("expires_at") else None
+    password = str(args.get("password") or "")
     form = LinkForm(
         data={
             "destination": args.get("destination", ""),
@@ -74,6 +75,7 @@ def tool_create_link(user, args: dict) -> dict:
             "code": args.get("alias", ""),
             "tags": args.get("tags", ""),
             "permanent": "on" if args.get("permanent") else "",
+            "password": password,
         },
         user=user,
     )
@@ -89,6 +91,10 @@ def tool_create_link(user, args: dict) -> dict:
             "is_active": True,
             "permanent": bool(cleaned.get("permanent", False)),
         }
+        if cleaned.get("password"):
+            from django.contrib.auth.hashers import make_password
+
+            payload["password_hash"] = make_password(cleaned["password"])
         payload["code"] = cleaned.get("code") or generate_short_code()
         if expires is not None:
             payload["expires_at"] = expires
@@ -192,6 +198,14 @@ def tool_update_link(user, args: dict) -> dict:
     if "permanent" in args:
         link.permanent = bool(args["permanent"])
         updates.append("permanent")
+    if args.get("password"):
+        from django.contrib.auth.hashers import make_password
+
+        link.password_hash = make_password(str(args["password"]))
+        updates.append("password_hash")
+    elif args.get("remove_password"):
+        link.password_hash = ""
+        updates.append("password_hash")
     if updates:
         try:
             link.save(update_fields=[*updates, "updated_at"])
@@ -262,6 +276,7 @@ TOOLS = [
                 },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
                 "permanent": {"type": "boolean", "description": "Respond with a cachable 301 redirect instead of 302. Browsers then stop reporting clicks."},
+                "password": {"type": "string", "description": "Optional gate password; visitors unlock once per browser session."},
             },
         },
         "handler": tool_create_link,
@@ -305,6 +320,9 @@ TOOLS = [
                     "description": "New expiry (ISO 8601); null removes the expiry.",
                 },
                 "is_active": {"type": "boolean", "description": "Start/stop redirecting."},
+                "permanent": {"type": "boolean", "description": "301 (true) instead of 302."},
+                "password": {"type": "string", "description": "Set or replace the link password."},
+                "remove_password": {"type": "boolean", "description": "Remove the link password."},
             },
         },
         "handler": tool_update_link,

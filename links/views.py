@@ -13,6 +13,8 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Max, Q
+from django.urls import reverse
+
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -514,6 +516,13 @@ def redirect_view(request, code):
     if link.expires_at and link.expires_at <= timezone.now():
         raise Http404()
 
+    # Password gate: locked links render an unlock form instead of
+    # redirecting (and never count a click for the unlock page view).
+    if link.password_hash and str(link.pk) not in request.session.get(
+        "unlocked_links", []
+    ):
+        return _unlock_or_403(request, link)
+
     from analytics.queries import record_click
 
     record_click(link, request)
@@ -523,3 +532,35 @@ def redirect_view(request, code):
         status=status,
         headers={"Cache-Control": "no-store" if status == 302 else "max-age=3600"},
     )
+
+
+def _unlock_or_403(request, link):
+    """Serve the unlock form for a password-gated link.
+
+    GET renders the form; POST checks the password against the stored
+    hash and remembers the unlocked link in the visitor's session. Wrong
+    answers are rate-limited per IP to make brute force slow.
+    """
+    from django.contrib.auth.hashers import check_password
+
+    unlocked_before = request.session.get("unlocked_links", [])
+
+    if request.method == "POST":
+        # Brute-force brake: 20 wrong tries per IP per 15 minutes.
+        ip = request.META.get("REMOTE_ADDR", "unknown")
+        misses_key = f"unlock-misses:{ip}"
+        misses = cache.get(misses_key, 0)
+        if misses >= 20:
+            raise PermissionDenied("Too many wrong passwords from your network.")
+
+        password = request.POST.get("password", "")
+        if check_password(password, link.password_hash):
+            cache.delete(misses_key)
+            request.session["unlocked_links"] = [*unlocked_before, str(link.pk)]
+            # Round-trip through the short code so the redirect itself
+            # records the click like any other visit.
+            return HttpResponseRedirect(reverse("redirect", args=[link.code]))
+        cache.set(misses_key, misses + 1, 15 * 60)
+        messages.error(request, "Wrong password. Try again.")
+
+    return render(request, "pages/unlock.html", {"link": link}, status=200)

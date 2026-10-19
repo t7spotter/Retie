@@ -12,6 +12,18 @@ class LinkForm(forms.ModelForm):
         help_text="Comma-separated labels, e.g. docs, marketing",
         widget=forms.TextInput(attrs={"placeholder": "optional, comma-separated tags"}),
     )
+    # Write-only gate password. Empty means "no change" on edit; the
+    # checkbox clears an existing password. The hash is stored, never
+    # the password itself.
+    password = forms.CharField(
+        required=False,
+        strip=True,
+        widget=forms.PasswordInput(
+            attrs={"placeholder": "unchanged", "autocomplete": "new-password"}
+        ),
+        help_text="Visitors must enter this once per browser session.",
+    )
+    remove_password = forms.BooleanField(required=False)
 
     def __init__(self, *args, user=None, instance=None, **kwargs):
         self.user = user
@@ -84,6 +96,13 @@ class LinkForm(forms.ModelForm):
     def _save_instance(self, link: Link, commit: bool) -> Link:
         if not commit:
             return link
+        from django.contrib.auth.hashers import make_password
+
+        password = self.cleaned_data.get("password") or ""
+        if password:
+            link.password_hash = make_password(password)
+        elif self.cleaned_data.get("remove_password"):
+            link.password_hash = ""
         with transaction.atomic():
             link.save()
             for name in self.tag_names:

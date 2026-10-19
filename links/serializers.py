@@ -9,6 +9,12 @@ class LinkSerializer(serializers.ModelSerializer):
     status = serializers.CharField(read_only=True)
     last_click_at = serializers.DateTimeField(read_only=True)
     tags = serializers.SerializerMethodField()
+    # Write-only gate password: `password` sets a new hash, `remove_password`
+    # clears one. Reads never expose whether a link is protected.
+    password = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, trim_whitespace=True
+    )
+    remove_password = serializers.BooleanField(write_only=True, required=False)
 
     class Meta:
         model = Link
@@ -23,6 +29,8 @@ class LinkSerializer(serializers.ModelSerializer):
             "status",
             "tags",
             "permanent",
+            "password",
+            "remove_password",
             "created_at",
             "updated_at",
             "click_count",
@@ -35,6 +43,32 @@ class LinkSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj: Link) -> list:
         return list(obj.tags.order_by("name").values_list("name", flat=True))
+
+    def create(self, validated_data):
+        password = validated_data.pop("password", "") or ""
+        remove = validated_data.pop("remove_password", False)
+        link = super().create(validated_data)
+        self._apply_password(link, password, remove)
+        return link
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", "") or ""
+        remove = validated_data.pop("remove_password", False)
+        link = super().update(instance, validated_data)
+        self._apply_password(link, password, remove)
+        return link
+
+    @staticmethod
+    def _apply_password(link: Link, password: str, remove: bool) -> None:
+        from django.contrib.auth.hashers import make_password
+
+        if password:
+            link.password_hash = make_password(password)
+        elif remove:
+            link.password_hash = ""
+        else:
+            return
+        link.save(update_fields=["password_hash", "updated_at"])
 
     def get_short_url(self, obj: Link) -> str:
         request = self.context.get("request")

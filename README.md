@@ -19,7 +19,17 @@ deployment, and no unnecessary infrastructure.
 - Optional titles and expiration dates. Deactivated and expired links stop
   redirecting with a clean 404.
 - Click analytics: total clicks, 30-day churn chart, referrers, coarse device
-  categories, recent activity. **No IP addresses are stored.**
+  categories, recent activity. **No IP addresses are stored.** Known bot
+  crawlers are flagged at click time (**bot filtering**) and excluded from
+  every metric by default (`?bots=1` on the analytics page/API, `bots=true`
+  on MCP, includes them).
+- **Per-link passwords**: a locked link shows an unlock page first; the
+  password is stored as a hash, unlocking persists per browser session, and
+  unlock attempts are rate-limited per IP (20 tries / 15 min). Unlock page
+  views never count as clicks.
+- **Session kill switch**: the profile page lists all browsers signed into
+  the account with a "sign out everywhere else" button (useful after a
+  password or 2FA change).
 - REST API at `/api/v1/` documented as OpenAPI 3 by drf-spectacular and served
   as a live docs portal (plus MCP for agents) by apiwarden at `/api/docs/`.
 - Modern responsive UI: Django templates + HTMX partial updates, Tailwind

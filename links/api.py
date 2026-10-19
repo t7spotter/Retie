@@ -65,12 +65,15 @@ class LinkViewSet(viewsets.ModelViewSet):
         # Empty codes are generated and retried against the unique constraint;
         # a user-chosen alias that collides is a client error, not a retry.
         custom_alias = bool(data.get("code"))
+        password = data.pop("password", "") or ""
+        remove_password = data.pop("remove_password", False)
         remaining = 5
         while True:
             payload = dict(data)
             payload["code"] = data.get("code") or generate_short_code()
             try:
                 link = Link.objects.create(user=request.user, **payload)
+                LinkSerializer._apply_password(link, password, remove_password)
             except IntegrityError:
                 if custom_alias:
                     return Response(

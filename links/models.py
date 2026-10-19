@@ -114,6 +114,10 @@ class Link(models.Model):
         default=False,
         help_text="Respond with a permanent 301 redirect (cachable by browsers).",
     )
+    # Optional gate: short links only reach their destination after the
+    # visitor answers the password once per browser session. Stored as
+    # a Django password hash — never in the clear.
+    password_hash = models.CharField(max_length=255, blank=True, default="")
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
