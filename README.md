@@ -264,6 +264,7 @@ unpkg.com/lucide).
 | `SITE_URL` | Canonical public URL used to build short links — **must include the scheme** (`https://…`); startup fails otherwise |
 | `BLOCKED_DESTINATIONS` | Comma-separated dest hosts (with their subdomains) that may never be shortenable |
 | `LINK_HEALTH_ENABLED` | `true` enables `manage.py check_links` (destination up/down badges). Off by default — see security note |
+| `GEOIP_DB` | Path to a GeoLite2-Country `.mmdb`; click events then record the visitor country (never the IP). Unset = dormant |
 
 ### CSV import / export
 

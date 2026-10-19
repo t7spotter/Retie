@@ -31,12 +31,16 @@ def record_click(link, request) -> ClickEvent:
     """Persist one redirect event for `link`.
 
     The referrer is only stored when sent by the browser; the IP address is
-    never persisted.
+    never persisted (the country code is derived from it and the address
+    itself is dropped).
     """
+    from links.geo import country_for
+
     return ClickEvent.objects.create(
         link=link,
         referrer=request.META.get("HTTP_REFERER", "")[:2048],
         device=device_category(request.META.get("HTTP_USER_AGENT", "")),
+        country=country_for(request.META.get("REMOTE_ADDR", "")),
     )
 
 
@@ -101,6 +105,22 @@ def device_breakdown(user, link=None) -> dict:
         clicks = clicks.filter(link=link)
     rows = clicks.values("device").annotate(count=Count("id")).order_by("-count")
     return {row["device"]: row["count"] for row in rows}
+
+
+def country_breakdown(user, link=None, limit: int = 8) -> list:
+    """Top countries among recorded clicks (by two-letter code).
+
+    Empty codes are left out; unknown-country clicks exist whenever geo
+    data is missing, and inventing "unknown" as a country would lie.
+    """
+    clicks = ClickEvent.objects.filter(link__user=user).exclude(country="")
+    if link is not None:
+        clicks = clicks.filter(link=link)
+    return list(
+        clicks.values("country")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:limit]
+    )
 
 
 def recent_clicks(user, limit: int = 10) -> list:

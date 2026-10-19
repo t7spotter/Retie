@@ -6,7 +6,7 @@
     {% endif %}
     <p class="truncate text-xs text-stone-500 dark:text-stone-400" title="{{ link.destination }}">{{ link.destination }}</p>
     {% if link.health_status %}
-      <p class="mt-0.5 flex items-center gap-1 text-[11px] {% if link.health_status == 'ok' %}text-emerald-600 dark:text-emerald-400{% else %}text-red-600 dark:text-red-400{% endif %}" title="{% if link.health_detail %}{{ link.health_detail }} — {% endif %}{{ link.destination }}">
+                          <p class="mt-0.5 flex items-center gap-1 text-[11px] {% if link.health_status == 'ok' %}text-emerald-600 dark:text-emerald-400{% else %}text-red-600 dark:text-red-400{% endif %}" title="{% if link.health_detail %}{{ link.health_detail }} — {% endif %}{{ link.destination }}">
         <span class="h-1.5 w-1.5 rounded-full {% if link.health_status == 'ok' %}bg-emerald-500{% else %}bg-red-500{% endif %}"></span>
         {% if link.health_status == 'ok' %}Destination up{% else %}Destination down{% endif %}
         {% if link.health_detail %}· {{ link.health_detail }}{% endif %}

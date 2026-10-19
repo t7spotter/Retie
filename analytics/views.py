@@ -26,6 +26,7 @@ def link_analytics(request, code):
         "referrers": referrers,
         "max_referrer_count": max_referrer_count,
         "devices": queries.device_breakdown(request.user, link=link),
+        "countries": queries.country_breakdown(request.user, link=link, limit=10),
         "recent_clicks": link.clicks.order_by("-created_at")[:10],
     }
     return render(request, "analytics/detail.html", context)

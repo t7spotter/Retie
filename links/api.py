@@ -135,6 +135,7 @@ class LinkAnalyticsView(APIView):
                 "clicks_over_time": queries.clicks_over_time(request.user, 30, link=link),
                 "referrers": queries.referrer_breakdown(request.user, link=link, limit=8),
                 "devices": queries.device_breakdown(request.user, link=link),
+                "countries": queries.country_breakdown(request.user, link=link),
             }
         )
 

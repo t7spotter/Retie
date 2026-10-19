@@ -45,6 +45,11 @@ BLOCKED_DESTINATIONS = [
 # want it). When true, `manage.py check_links` verifies each destination and
 # adds ok/error badges in the dashboard.
 LINK_HEALTH_ENABLED = env.bool("LINK_HEALTH_ENABLED", default=False)
+
+# Optional path to a GeoLite2-Country .mmdb file. When set, click events
+# record the visitor's country (never the IP itself); the website shows a
+# Countries card on link pages. Untouched, the feature is dormant.
+GEOIP_DB = env.str("GEOIP_DB", default="") or None
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "[::1]"])
 CSRF_TRUSTED_ORIGINS = [
     o for o in env.list("CSRF_TRUSTED_ORIGINS", default=[]) if o

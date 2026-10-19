@@ -36,6 +36,10 @@ class ClickEvent(models.Model):
         choices=DEVICE_CHOICES,
         default=DEVICE_OTHER,
     )
+    # Coarse two-letter ISO country resolved from the visitor IP *at click
+    # time*; the IP itself is never stored. Blank when geo data is not
+    # configured or the address is private/unknown.
+    country = models.CharField(max_length=2, blank=True, default="")
 
     class Meta:
         ordering = ["-created_at"]

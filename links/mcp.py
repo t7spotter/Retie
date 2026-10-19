@@ -208,6 +208,7 @@ def tool_get_link_analytics(user, args: dict) -> dict:
         "clicks_over_time": queries.clicks_over_time(user, days, link=link),
         "referrers": queries.referrer_breakdown(user, link=link, limit=8),
         "devices": queries.device_breakdown(user, link=link),
+        "countries": queries.country_breakdown(user, link=link),
     }
 
 
