@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Two-factor authentication — Retie{% endblock %}
+
+{% block body %}
+<main class="mx-auto max-w-2xl px-4 py-10">
+  <h1 class="text-2xl font-semibold tracking-tight">Two-factor authentication</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="mt-4 rounded-xl border px-3 py-2 text-sm {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300{% elif message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300{% elif message.tags == 'info' %}border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200{% endif %}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if two.enabled %}
+    <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-900 dark:bg-emerald-950">
+      <p class="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+        Two-factor is protecting this account. Logins need a code from your authenticator app (or a recovery code).
+      </p>
+      <form method="post" class="mt-4 flex items-center gap-2">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="disable">
+        <input name="code" inputmode="numeric" maxlength="7" placeholder="Current code to confirm"
+               class="w-56 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm dark:border-emerald-800 dark:bg-stone-950">
+        <button type="submit" class="rounded-xl border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-stone-900 dark:text-emerald-300 dark:hover:bg-emerald-900">
+          Turn off
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Scan with your authenticator, then confirm</h2>
+      <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-stone-600 dark:text-stone-300">
+        <li>Open your authenticator app (Aegis, 1Password, Google Authenticator, …).</li>
+        <li>Scan this QR code — or add the key <code class="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-xs dark:bg-stone-800">{{ two.secret }}</code>.</li>
+        <li>Enter the 6-digit code it shows to prove the link.</li>
+      </ol>
+      <div class="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+        <img src="{% url 'two_factor_qr' %}" alt="2FA QR code" width="180" height="180"
+             class="rounded-xl border border-stone-200 bg-white p-2 dark:border-stone-700">
+        <form method="post" class="flex w-full items-center gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="enable">
+          <input name="code" inputmode="numeric" maxlength="7" placeholder="123456" required autofocus
+                 class="w-40 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-950">
+          <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+            Enable
+          </button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if fresh_codes %}
+    <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950">
+      <h2 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Recovery codes — shown once, store them now</h2>
+      <ul class="mt-3 grid grid-cols-2 gap-1 font-mono text-sm text-amber-900 dark:text-amber-200 sm:grid-cols-2">
+        {% for code in fresh_codes %}<li>{{ code }}</li>{% endfor %}
+      </ul>
+      <p class="mt-3 text-xs text-amber-700 dark:text-amber-400">
+        Each works exactly once if your authenticator is lost. Only hashes are kept on the server.
+      </p>
+    </div>
+  {% endif %}
+
+  <a href="{% url 'profile' %}" class="mt-8 inline-block text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+    Back to profile
+  </a>
+</main>
+{% endblock %}

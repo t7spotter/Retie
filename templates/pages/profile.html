@@ -31,6 +31,11 @@
     </dl>
 
     <div class="mt-6 flex flex-wrap gap-3">
+      <a href="{% url 'two_factor_setup' %}"
+         class="inline-flex items-center gap-2 rounded-xl border {% if two_enabled %}border-emerald-300 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300{% else %}border-stone-300 text-stone-700 dark:border-stone-700 dark:text-stone-200{% endif %} bg-white px-4 py-2.5 text-sm font-medium hover:bg-stone-50 dark:bg-stone-900 dark:hover:bg-stone-800">
+        <i data-lucide="shield-check" class="h-4 w-4"></i>
+        {% if two_enabled %}Two-factor is on{% else %}Enable two-factor{% endif %}
+      </a>
       <a href="{% url 'password_change' %}"
          class="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
         <i data-lucide="key-round" class="h-4 w-4"></i> Change password

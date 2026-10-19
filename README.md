@@ -409,6 +409,19 @@ curl -X POST https://links.example.com/mcp/ \
 (A second, docs-only MCP surface lives at `/api/docs/mcp` — it exposes the
 API documentation for agents to read, never your data.)
 
+## Login two-factor (TOTP)
+
+Every user can add a second factor on the profile page: scan the QR (Aegis,
+1Password, Google Authenticator, …), confirm one live code, and logins then
+require a 30-second TOTP code — or one of ten hashed, single-use recovery
+codes shown only at enrolment. Login throttling covers the second step
+(10 attempts / 15 min per IP+identity).
+
+Honest limitation: the TOTP secret is stored in the database in the clear
+(the same trade-off as DRF API tokens); database compromise means 2FA is
+readable there too — the protection is against leaked passwords & phishing,
+not DB-level attackers.
+
 ## Tests
 
 ```bash
