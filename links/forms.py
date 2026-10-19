@@ -47,11 +47,21 @@ class LinkForm(forms.ModelForm):
 
     class Meta:
         model = Link
-        fields = ["destination", "title", "code", "expires_at", "is_active", "permanent", "public_stats"]
+        fields = [
+            "destination",
+            "title",
+            "code",
+            "expires_at",
+            "is_active",
+            "permanent",
+            "public_stats",
+            "notes",
+        ]
         widgets = {
             "destination": forms.URLInput(attrs={"placeholder": "https://example.com/article"}),
             "title": forms.TextInput(attrs={"placeholder": "Optional title"}),
             "code": forms.TextInput(attrs={"placeholder": "Optional custom alias"}),
+            "notes": forms.Textarea(attrs={"rows": 2, "placeholder": "Private note. Only you see this."}),
         }
 
     def clean_destination(self):

@@ -30,6 +30,7 @@ class LinkSerializer(serializers.ModelSerializer):
             "tags",
             "permanent",
             "public_stats",
+            "notes",
             "password",
             "remove_password",
             "password",

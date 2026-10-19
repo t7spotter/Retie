@@ -74,6 +74,7 @@ def tool_create_link(user, args: dict) -> dict:
             "title": args.get("title", ""),
             "code": args.get("alias", ""),
             "tags": args.get("tags", ""),
+            "notes": args.get("notes", ""),
             "permanent": "on" if args.get("permanent") else "",
             "public_stats": "on" if args.get("public_stats") else "",
             "password": password,
@@ -92,6 +93,7 @@ def tool_create_link(user, args: dict) -> dict:
             "is_active": True,
             "permanent": bool(cleaned.get("permanent", False)),
             "public_stats": bool(cleaned.get("public_stats", False)),
+            "notes": cleaned.get("notes", ""),
         }
         if cleaned.get("password"):
             from django.contrib.auth.hashers import make_password
@@ -120,6 +122,7 @@ def tool_create_link(user, args: dict) -> dict:
         "is_active": link.is_active,
         "permanent": link.permanent,
         "public_stats": link.public_stats,
+        "notes": link.notes,
     }
 
 
@@ -171,6 +174,7 @@ def tool_get_link(user, args: dict) -> dict:
         "expires_at": link.expires_at,
         "permanent": link.permanent,
         "public_stats": link.public_stats,
+        "notes": link.notes,
         "total_clicks": link.clicks.count(),
     }
 
@@ -202,6 +206,9 @@ def tool_update_link(user, args: dict) -> dict:
     if "public_stats" in args:
         link.public_stats = bool(args["public_stats"])
         updates.append("public_stats")
+    if "notes" in args:
+        link.notes = str(args["notes"] or "")[:2000]
+        updates.append("notes")
     if "permanent" in args:
         link.permanent = bool(args["permanent"])
         updates.append("permanent")
@@ -283,6 +290,7 @@ TOOLS = [
                 },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
                 "public_stats": {"type": "boolean", "description": "Publish a public stats page at /stats/<code>."},
+                "notes": {"type": "string", "description": "Private owners-only note (max 2000 chars)."},
                 "permanent": {"type": "boolean", "description": "Respond with a cachable 301 redirect instead of 302. Browsers then stop reporting clicks."},
                 "password": {"type": "string", "description": "Optional gate password; visitors unlock once per browser session."},
             },

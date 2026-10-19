@@ -141,6 +141,8 @@ class Link(models.Model):
     )
     health_detail = models.CharField(max_length=200, blank=True, default="")
     last_checked_at = models.DateTimeField(null=True, blank=True)
+    # Private owners-only note (never rendered on any public page).
+    notes = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["-created_at"]
