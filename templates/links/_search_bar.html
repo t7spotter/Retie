@@ -4,20 +4,19 @@
         hx-trigger="input changed delay:300ms, change delay:150ms"
         class="flex flex-1 items-center gap-2">
     <div class="relative flex-1">
-      <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"></i>
+      <i data-lucide="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"></i>
       <input type="search" name="q" value="{{ query }}" placeholder="Search title, destination, or code…"
-             class="w-full rounded-xl border border-stone-300 bg-white py-2.5 pl-9 pr-3 text-sm placeholder-stone-400 outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40"
+             class="rt-input pl-9"
              aria-label="Search links">
       <input type="hidden" name="status" value="{{ status }}">
     </div>
-    <select name="status" aria-label="Filter by status"
-            class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200">
+    <select name="status" aria-label="Filter by status" class="rt-input w-auto">
       <option value="all" {% if status == 'all' %}selected{% endif %}>All</option>
       <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
       <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
       <option value="expired" {% if status == 'expired' %}selected{% endif %}>Expired</option>
       <option value="trash" {% if status == 'trash' %}selected{% endif %}>Trash</option>
     </select>
-    <button type="submit" class="rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-700 hover:bg-stone-50 lg:hidden dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">Go</button>
+    <button type="submit" class="rt-btn rt-btn-secondary sm:hidden">Go</button>
   </form>
 </div>

@@ -5,12 +5,12 @@
 {% block body %}
 <div class="grid min-h-screen place-items-center px-4">
   <div class="w-full max-w-sm text-center">
-    <span class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-amber-50 text-amber-500 dark:bg-amber-950 dark:text-amber-400">
+    <span class="rt-avatar mx-auto grid h-14 w-14 place-items-center rounded-full bg-warning-soft text-warning">
       <i data-lucide="shield-alert" class="h-7 w-7"></i>
     </span>
-    <h1 class="mt-5 text-3xl font-semibold tracking-tight text-stone-900 dark:text-white">Access denied</h1>
-    <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">{% if exception %}{{ exception }}{% else %}You don't have permission to view this page.{% endif %}</p>
-    <a href="{% url 'dashboard' %}" class="mt-6 inline-block rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-500">Go home</a>
+    <h1 class="title mt-5 text-ink">Access denied</h1>
+    <p class="mt-2 body-sm text-ink-soft">{% if exception %}{{ exception }}{% else %}You don't have permission to view this page.{% endif %}</p>
+    <a href="{% url 'dashboard' %}" class="rt-btn rt-btn-primary mt-6">Go home</a>
   </div>
 </div>
 {% endblock %}

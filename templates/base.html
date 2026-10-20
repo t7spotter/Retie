@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,22 +9,24 @@
   <!-- ?v bumps whenever app.css is rebuilt so browsers drop stale copies. -->
   <!-- Flatpickr's own styles load first so app.css (rebuilt below) can override them -->
   <link rel="stylesheet" href="{% static 'vendor/flatpickr.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261020f">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261021d">
   <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
   <script>
-    // Apply the stored theme before first paint to avoid a flash.
+    // Resolve the stored system/light/dark theme before first paint. The
+    // system preference always resolves to an explicit data-theme so the
+    // token styles and the Tailwind dark: variant agree.
     (function () {
       try {
-        var pref = localStorage.getItem("theme") || "system";
-        var dark = pref === "dark" || (pref === "system"
-          ? window.matchMedia("(prefers-color-scheme: dark)").matches
-          : false);
-        document.documentElement.classList.toggle("dark", dark);
+        var pref = localStorage.getItem("retie-theme") || localStorage.getItem("theme") || "system";
+        if (pref !== "light" && pref !== "dark") {
+          pref = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", pref);
       } catch (e) {}
     })();
   </script>
 </head>
-<body class="min-h-screen bg-stone-50 font-sans text-stone-800 antialiased transition-colors dark:bg-stone-950 dark:text-stone-200">
+<body class="min-h-screen bg-paper font-sans text-ink antialiased">
   {% block body %}{% endblock %}
 
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>

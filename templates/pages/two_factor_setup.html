@@ -4,67 +4,72 @@
 
 {% block body %}
 <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-  <h1 class="text-2xl font-semibold tracking-tight">Two-factor authentication</h1>
+  <nav class="mono-sm mb-2 text-ink-soft" aria-label="Breadcrumb">
+    <a href="{% url 'profile' %}" class="hover:underline">Profile</a> / Two-factor
+  </nav>
+  <h1 class="title text-ink">Two-factor authentication</h1>
 
   {% if messages %}
     {% for message in messages %}
-    <div class="mt-4 rounded-xl border px-3 py-2 text-sm {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300{% elif message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300{% elif message.tags == 'info' %}border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200{% endif %}">{{ message }}</div>
+    <div class="rt-notice mt-4
+      {% if message.tags == 'error' %}rt-notice-danger{% elif message.tags == 'success' %}rt-notice-success{% elif message.tags == 'warning' %}rt-notice-warning{% else %}rt-notice-info{% endif %}">
+      <i data-lucide="info" class="rt-notice-icon h-5 w-5"></i>
+      <div class="rt-notice-body"><p class="rt-notice-text">{{ message }}</p></div>
+    </div>
     {% endfor %}
   {% endif %}
 
   {% if two.enabled %}
-    <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950">
-      <p class="text-sm font-medium text-emerald-800 dark:text-emerald-300">
-        Two-factor is protecting this account. Logins need a code from your authenticator app (or a recovery code).
-      </p>
-      <form method="post" class="mt-4 flex items-center gap-2">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="disable">
-        <input name="code" inputmode="numeric" maxlength="7" placeholder="Current code to confirm"
-               class="w-56 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm dark:border-emerald-800 dark:bg-stone-950">
-        <button type="submit" class="rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-stone-900 dark:text-emerald-300 dark:hover:bg-emerald-900">
-          Turn off
-        </button>
-      </form>
+    <div class="rt-notice rt-notice-success mt-6">
+      <i data-lucide="shield-check" class="rt-notice-icon h-5 w-5"></i>
+      <div class="rt-notice-body">
+        <p class="rt-notice-title">Two-factor is protecting this account</p>
+        <p class="rt-notice-text">Logins need a code from your authenticator app (or a recovery code).</p>
+        <form method="post" class="rt-notice-action flex flex-wrap items-center gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="disable">
+          <input name="code" inputmode="numeric" maxlength="7" placeholder="Current code to confirm"
+                 class="rt-input w-56">
+          <button type="submit" class="rt-btn rt-btn-sm rt-btn-secondary">Turn off</button>
+        </form>
+      </div>
     </div>
   {% else %}
-    <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Scan with your authenticator, then confirm</h2>
-      <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-stone-600 dark:text-stone-300">
+    <div class="rt-card mt-6">
+      <h2 class="subheading text-ink">Scan with your authenticator, then confirm</h2>
+      <ol class="mt-2 list-decimal space-y-2 pl-5 body-sm text-ink-soft">
         <li>Open your authenticator app (Aegis, 1Password, Google Authenticator, …).</li>
-        <li>Scan this QR code — or add the key <code class="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-xs dark:bg-stone-800">{{ two.secret }}</code>.</li>
+        <li>Scan this QR code — or add the key <code class="rounded-sm bg-mist px-1.5 py-0.5 font-mono caption text-ink">{{ two.secret }}</code>.</li>
         <li>Enter the 6-digit code it shows to prove the link.</li>
       </ol>
       <div class="mt-5 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
         <img src="{% url 'two_factor_qr' %}" alt="2FA QR code" width="180" height="180"
-             class="rounded-xl border border-stone-200 bg-white p-2 dark:border-stone-700">
+             class="rounded-md border border-line bg-surface p-2">
         <form method="post" class="flex w-full items-center gap-2">
           {% csrf_token %}
           <input type="hidden" name="action" value="enable">
           <input name="code" inputmode="numeric" maxlength="7" placeholder="123456" required autofocus
-                 class="w-40 rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-950">
-          <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">
-            Enable
-          </button>
+                 class="rt-input w-40 font-mono">
+          <button type="submit" class="rt-btn rt-btn-primary">Enable</button>
         </form>
       </div>
     </div>
   {% endif %}
 
   {% if fresh_codes %}
-    <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900 dark:bg-amber-950">
-      <h2 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Recovery codes — shown once, store them now</h2>
-      <ul class="mt-3 grid grid-cols-2 gap-1 font-mono text-sm text-amber-900 dark:text-amber-200 sm:grid-cols-2">
-        {% for code in fresh_codes %}<li>{{ code }}</li>{% endfor %}
+    <div class="rt-card is-raised mt-6 border-coral-soft bg-coral-soft">
+      <h2 class="subheading text-ink">Recovery codes — shown once, store them now</h2>
+      <ul class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 font-mono caption text-ink">
+        {% for code in fresh_codes %}<li class="truncate">{{ code }}</li>{% endfor %}
       </ul>
-      <p class="mt-3 text-xs text-amber-700 dark:text-amber-400">
+      <p class="mt-3 caption text-ink-soft">
         Each works exactly once if your authenticator is lost. Only hashes are kept on the server.
       </p>
     </div>
   {% endif %}
 
-  <a href="{% url 'profile' %}" class="mt-8 inline-block text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
-    Back to profile
+  <a href="{% url 'profile' %}" class="rt-btn rt-btn-quiet mt-8 -ml-3">
+    <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to profile
   </a>
 </main>
 {% endblock %}

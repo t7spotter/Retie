@@ -7,35 +7,34 @@
   {% if tag_names %}
   <div class="mb-3 flex flex-wrap items-center gap-2" data-tag-filter>
     <a href="{% url 'link_table' %}?{% if query %}q={{ query|urlencode }}&{% endif %}status={{ status|urlencode }}"
-       class="rounded-full px-3 py-1 text-xs font-medium {% if not tag %}bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900{% else %}bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700{% endif %}">
-      All
+       class="rt-tag {% if not tag %}rt-tag-violet{% endif %}">
+      {% if not tag %}<span class="rt-tag-dot"></span>{% endif %}All
     </a>
     {% for name in tag_names %}
     <a href="{% url 'link_table' %}?{% if query %}q={{ query|urlencode }}&{% endif %}status={{ status|urlencode }}&tag={{ name|urlencode }}"
-       class="rounded-full px-3 py-1 text-xs font-medium {% if tag == name %}bg-indigo-600 text-white{% else %}bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-950 dark:text-indigo-300 dark:hover:bg-indigo-900{% endif %}">
-      {{ name }}
+       class="rt-tag {% if tag == name %}rt-tag-violet{% else %}hover:text-ink{% endif %}">
+      {% if tag == name %}<span class="rt-tag-dot"></span>{% endif %}{{ name }}
     </a>
     {% endfor %}
   </div>
   {% endif %}
-  <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
+  <div class="rt-card !gap-0 overflow-hidden p-0">
     {{ spark|json_script:"spark-all-data" }}
     {% if page_obj.object_list %}
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[640px] text-left text-sm">
+      <table class="w-full min-w-[640px] text-left body-sm">
         <thead>
-          <tr class="border-b border-stone-200 text-xs font-medium uppercase tracking-wide text-stone-400 dark:border-stone-800">
+          <tr class="border-b border-line caption text-ink-faint">
             <th scope="col" class="px-2 py-3">
               <input type="checkbox" data-bulk-toggle-all
-                     class="rounded border-stone-300 text-indigo-600 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800"
                      aria-label="Select all links on this page">
             </th>
-            <th scope="col" class="px-5 py-3">Link</th>
-            <th scope="col" class="px-5 py-3">Short URL</th>
-            <th scope="col" class="px-5 py-3">Status</th>
-            <th scope="col" class="px-5 py-3 text-right">Clicks</th>
-            <th scope="col" class="px-5 py-3">Last click</th>
-            <th scope="col" class="px-5 py-3 text-right">Actions</th>
+            <th scope="col" class="px-4 py-3">Link</th>
+            <th scope="col" class="px-4 py-3">Short URL</th>
+            <th scope="col" class="px-4 py-3">Status</th>
+            <th scope="col" class="px-4 py-3 text-right">Clicks</th>
+            <th scope="col" class="px-4 py-3">Last click</th>
+            <th scope="col" class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -46,16 +45,16 @@
       </table>
     </div>
     {% else %}
-    <div class="px-6 py-14 text-center">
-      <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-indigo-500 dark:bg-indigo-950 dark:text-indigo-400">
+    <div class="p-6 py-14 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-violet-soft text-violet-ink">
         <i data-lucide="mouse-pointer-click" class="h-6 w-6"></i>
       </span>
       {% if query or status != 'all' %}
-      <p class="mt-4 font-medium text-stone-700 dark:text-stone-200">No links match your filters</p>
-      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Try a different search term or filter.</p>
+      <p class="mt-4 label text-ink">No links match your filters</p>
+      <p class="mt-1 body-sm text-ink-soft">Try a different search term or filter.</p>
       {% else %}
-      <p class="mt-4 font-medium text-stone-700 dark:text-stone-200">No links yet</p>
-      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Create your first short link using the form — it only takes a URL.</p>
+      <p class="mt-4 label text-ink">No links yet</p>
+      <p class="mt-1 body-sm text-ink-soft">Create your first short link using the form — it only takes a URL.</p>
       {% endif %}
     </div>
     {% endif %}
@@ -63,7 +62,7 @@
 
   {% if page_obj.paginator.num_pages > 1 %}
   <nav class="mt-4 flex items-center justify-between" aria-label="Pagination">
-    <p class="text-sm text-stone-500 dark:text-stone-400">
+    <p class="mono-sm text-ink-soft">
       Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
     </p>
     <div class="flex gap-2">
@@ -71,7 +70,7 @@
       <a href="{% url 'dashboard' %}?{{ table_query }}&amp;page={{ page_obj.previous_page_number }}"
          hx-get="{% url 'link_table' %}?{{ table_query }}&amp;page={{ page_obj.previous_page_number }}"
          hx-target="#links-table-region" hx-swap="outerHTML"
-         class="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">
+         class="rt-btn rt-btn-sm rt-btn-secondary">
         Previous
       </a>
       {% endif %}
@@ -79,7 +78,7 @@
       <a href="{% url 'dashboard' %}?{{ table_query }}&amp;page={{ page_obj.next_page_number }}"
          hx-get="{% url 'link_table' %}?{{ table_query }}&amp;page={{ page_obj.next_page_number }}"
          hx-target="#links-table-region" hx-swap="outerHTML"
-         class="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800">
+         class="rt-btn rt-btn-sm rt-btn-secondary">
         Next
       </a>
       {% endif %}

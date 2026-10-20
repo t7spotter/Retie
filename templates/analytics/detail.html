@@ -5,42 +5,40 @@
 
 {% block body %}
 <div class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-  <a href="{% url 'dashboard' %}" class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">
+  <a href="{% url 'dashboard' %}" class="rt-btn rt-btn-quiet -ml-3 mb-6">
     <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to dashboard
   </a>
 
   <!-- Link summary header -->
-  <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+  <div class="rt-card">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div class="min-w-0">
-        <h1 class="text-lg font-semibold tracking-tight text-stone-900 dark:text-white">
+        <h1 class="heading text-ink">
           {% if link.title %}{{ link.title }}{% else %}Analytics{% endif %}
         </h1>
-        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <a href="{{ link.short_url }}" target="_blank" rel="noopener" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">{{ link.short_url }}</a>
-          <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-stone-400"></i>
-          <span class="break-all text-stone-500 dark:text-stone-400">{{ link.destination }}</span>
+        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 body-sm">
+          <a href="{{ link.short_url }}" target="_blank" rel="noopener" class="font-mono font-medium text-violet-ink hover:underline">{{ link.short_url }}</a>
+          <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-ink-faint"></i>
+          <span class="break-all text-ink-soft">{{ link.destination }}</span>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <a href="{% if bots %}{% url 'link_analytics' link.code %}{% else %}{% url 'link_analytics' link.code %}?bots=1{% endif %}"
-           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+           class="rt-btn rt-btn-sm rt-btn-secondary"
            title="{% if bots %}Hide known bot clicks{% else %}Include known bot clicks{% endif %}">
           <i data-lucide="{% if bots %}bot-off{% else %}bot{% endif %}" class="h-4 w-4"></i>
           {% if bots %}Bots shown{% else %}Include bots{% endif %}
-          {% if bot_clicks %}<span class="rounded-full bg-stone-100 px-1.5 text-xs dark:bg-stone-800">{{ bot_clicks }}</span>{% endif %}
+          {% if bot_clicks %}<span class="rt-tab-count">{{ bot_clicks }}</span>{% endif %}
         </a>
         <a href="{% url 'link_analytics_csv' link.code %}"
-           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+           class="rt-btn rt-btn-sm rt-btn-secondary"
            title="Download this link's analytics as CSV">
           <i data-lucide="download" class="h-4 w-4"></i> CSV
         </a>
-        <button type="button" data-copy="{{ link.short_url }}"
-                class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+        <button type="button" data-copy="{{ link.short_url }}" class="rt-btn rt-btn-sm rt-btn-secondary">
           <i data-lucide="copy" class="h-4 w-4"></i> Copy
         </button>
-        <a href="{% url 'link_edit' link.code %}"
-           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+        <a href="{% url 'link_edit' link.code %}" class="rt-btn rt-btn-sm rt-btn-secondary">
           <i data-lucide="pencil" class="h-4 w-4"></i> Edit
         </a>
       </div>
@@ -49,35 +47,35 @@
 
   <!-- Stat cards -->
   <div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <p class="text-sm text-stone-500 dark:text-stone-400">Total clicks</p>
-      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ total_clicks }}</p>
+    <div class="rt-card">
+      <p class="caption text-ink-soft">Total clicks</p>
+      <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ total_clicks }}</p>
     </div>
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <p class="text-sm text-stone-500 dark:text-stone-400">Clicks, 30 days</p>
-      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ total_clicks_30 }}</p>
+    <div class="rt-card">
+      <p class="caption text-ink-soft">Clicks, 30 days</p>
+      <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ total_clicks_30 }}</p>
     </div>
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <p class="text-sm text-stone-500 dark:text-stone-400">Status</p>
-      <p class="mt-2 text-2xl font-semibold tracking-tight">
+    <div class="rt-card">
+      <p class="caption text-ink-soft">Status</p>
+      <p class="mt-2">
         {% if link.status == 'active' %}
-        <span class="text-emerald-600 dark:text-emerald-400">Active</span>
+        <span class="rt-tag rt-tag-success"><span class="rt-tag-dot"></span>Active</span>
         {% elif link.status == 'expired' %}
-        <span class="text-amber-600 dark:text-amber-400">Expired</span>
+        <span class="rt-tag rt-tag-warning"><span class="rt-tag-dot"></span>Expired</span>
         {% else %}
-        <span class="text-stone-500">Inactive</span>
+        <span class="rt-tag">Inactive</span>
         {% endif %}
       </p>
     </div>
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <p class="text-sm text-stone-500 dark:text-stone-400">Created</p>
-      <p class="mt-2 text-2xl font-semibold tracking-tight">{{ link.created_at|naturaltime }}</p>
+    <div class="rt-card">
+      <p class="caption text-ink-soft">Created</p>
+      <p class="mt-1 body-lg font-medium text-ink">{{ link.created_at|naturaltime }}</p>
     </div>
   </div>
 
   <!-- Chart -->
-  <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-    <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Clicks over the last 30 days</h2>
+  <div class="rt-card mt-6">
+    <h2 class="subheading text-ink">Clicks over the last 30 days</h2>
     <div class="mt-4 h-56">
       <canvas id="analytics-chart" aria-label="Clicks per day over the last 30 days"></canvas>
     </div>
@@ -86,47 +84,47 @@
 
   <div class="mt-6 grid gap-6 lg:grid-cols-2">
     <!-- Referrers -->
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Top referrers</h2>
+    <div class="rt-card">
+      <h2 class="subheading text-ink">Top referrers</h2>
       {% if referrers %}
-      <ul class="mt-4 space-y-3">
+      <ul class="flex flex-col gap-3">
         {% for row in referrers %}
         <li>
-          <div class="flex items-center justify-between gap-3 text-sm">
-            <span class="truncate text-stone-700 dark:text-stone-200">{{ row.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}</span>
-            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ row.count }}</span>
+          <div class="flex items-center justify-between gap-3 body-sm">
+            <span class="truncate text-ink">{{ row.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}</span>
+            <span class="mono shrink-0 text-ink-soft tabular-nums">{{ row.count }}</span>
           </div>
-          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio row.count max_referrer_count 100 %}%"></div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist">
+            <div class="h-full rounded-full bg-violet" style="width: {% widthratio row.count max_referrer_count 100 %}%"></div>
           </div>
         </li>
         {% endfor %}
       </ul>
       {% else %}
-      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">No referrers recorded yet. Most browsers omit referrer data.</p>
+      <p class="body-sm text-ink-soft">No referrers recorded yet. Most browsers omit referrer data.</p>
       {% endif %}
     </div>
 
     <!-- Countries -->
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Countries</h2>
+    <div class="rt-card">
+      <h2 class="subheading text-ink">Countries</h2>
       {% if countries %}
-      <ul class="mt-4 space-y-3">
+      <ul class="flex flex-col gap-3">
         {% for row in countries %}
         <li>
-          <div class="flex items-center justify-between gap-3 text-sm">
-            <span class="text-stone-700 dark:text-stone-200">{{ row.country }}</span>
-            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ row.count }}</span>
+          <div class="flex items-center justify-between gap-3 body-sm">
+            <span class="text-ink">{{ row.country }}</span>
+            <span class="mono shrink-0 text-ink-soft tabular-nums">{{ row.count }}</span>
           </div>
-          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-            <div class="h-full rounded-full bg-cyan-500" style="width: {% widthratio row.count total_clicks 100 %}%"></div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist">
+            <div class="h-full rounded-full bg-apricot" style="width: {% widthratio row.count total_clicks 100 %}%"></div>
           </div>
         </li>
         {% endfor %}
       </ul>
-      <p class="mt-4 text-xs text-stone-400">Resolved without storing any IP address.</p>
+      <p class="mt-3 caption text-ink-faint">Resolved without storing any IP address.</p>
       {% else %}
-      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">
+      <p class="body-sm text-ink-soft">
         No country data yet — the operator may not have configured a GeoLite2
         country database.
       </p>
@@ -134,85 +132,85 @@
     </div>
 
     <!-- Devices -->
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Devices</h2>
+    <div class="rt-card">
+      <h2 class="subheading text-ink">Devices</h2>
       {% if devices %}
-      <ul class="mt-4 space-y-3">
+      <ul class="flex flex-col gap-3">
         {% for name, count in devices.items %}
         <li>
-          <div class="flex items-center justify-between gap-3 text-sm">
-            <span class="text-stone-700 dark:text-stone-200">{{ name|title }}</span>
-            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ count }}</span>
+          <div class="flex items-center justify-between gap-3 body-sm">
+            <span class="text-ink">{{ name|title }}</span>
+            <span class="mono shrink-0 text-ink-soft tabular-nums">{{ count }}</span>
           </div>
-          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio count total_clicks 100 %}%"></div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist">
+            <div class="h-full rounded-full bg-violet" style="width: {% widthratio count total_clicks 100 %}%"></div>
           </div>
         </li>
         {% endfor %}
       </ul>
       {% else %}
-      <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">No clicks recorded yet.</p>
+      <p class="body-sm text-ink-soft">No clicks recorded yet.</p>
       {% endif %}
     </div>
 
     {% if link.variant_b %}
     <!-- A/B variants -->
-    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">A/B split test</h2>
-      <ul class="mt-4 space-y-3">
+    <div class="rt-card">
+      <h2 class="subheading text-ink">A/B split test</h2>
+      <ul class="flex flex-col gap-3">
         <li>
-          <div class="flex items-center justify-between gap-3 text-sm">
-            <span class="text-stone-700 dark:text-stone-200" title="{{ link.destination }}">Variant A <span class="text-stone-400">(destination)</span></span>
-            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ variant_a_count }}</span>
+          <div class="flex items-center justify-between gap-3 body-sm">
+            <span class="text-ink" title="{{ link.destination }}">Variant A <span class="text-ink-faint">(destination)</span></span>
+            <span class="mono shrink-0 text-ink-soft tabular-nums">{{ variant_a_count }}</span>
           </div>
-          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio variant_a_count total_clicks 100 %}%"></div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist">
+            <div class="h-full rounded-full bg-violet" style="width: {% widthratio variant_a_count total_clicks 100 %}%"></div>
           </div>
         </li>
         <li>
-          <div class="flex items-center justify-between gap-3 text-sm">
-            <span class="text-stone-700 dark:text-stone-200" title="{{ link.variant_b }}">Variant B</span>
-            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ variant_b_count }}</span>
+          <div class="flex items-center justify-between gap-3 body-sm">
+            <span class="text-ink" title="{{ link.variant_b }}">Variant B</span>
+            <span class="mono shrink-0 text-ink-soft tabular-nums">{{ variant_b_count }}</span>
           </div>
-          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-            <div class="h-full rounded-full bg-amber-500" style="width: {% widthratio variant_b_count total_clicks 100 %}%"></div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-mist">
+            <div class="h-full rounded-full bg-apricot" style="width: {% widthratio variant_b_count total_clicks 100 %}%"></div>
           </div>
         </li>
       </ul>
-      <p class="mt-3 text-xs text-stone-400">Roughly 50/50 per visit; counts include every valid visitor.</p>
+      <p class="mt-3 caption text-ink-faint">Roughly 50/50 per visit; counts include every valid visitor.</p>
     </div>
     {% endif %}
   </div>
 
   <!-- Recently clicked -->
-  <div class="mt-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-    <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Recent clicks</h2>
+  <div class="rt-card mt-6">
+    <h2 class="subheading text-ink">Recent clicks</h2>
     {% if recent_clicks %}
-    <ul class="mt-4 divide-y divide-stone-100 dark:divide-stone-800">
+    <ul class="flex flex-col">
       {% for click in recent_clicks %}
-      <li class="flex items-center justify-between gap-3 py-2.5 text-sm">
-        <span class="text-stone-500 dark:text-stone-400">
-          {% if click.referrer %}{{ click.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}{% else %}Direct{% endif %}
+      <li class="rt-row">
+        <span class="rt-row-main">
+          <span class="rt-row-title">{% if click.referrer %}{{ click.referrer|cut:'https://'|cut:'http://'|truncatechars:40 }}{% else %}Direct{% endif %}</span>
         </span>
-        <span class="flex items-center gap-3 text-stone-400">
-          <span class="rounded-full bg-stone-100 px-2 py-0.5 text-xs dark:bg-stone-800">{{ click.device }}</span>
-          <time datetime="{{ click.created_at|date:'c' }}">{{ click.created_at|naturaltime }}</time>
+        <span class="flex shrink-0 items-center gap-3">
+          <span class="rt-tag h-5 px-2 text-[11px]">{{ click.device }}</span>
+          <time class="rt-row-meta" datetime="{{ click.created_at|date:'c' }}">{{ click.created_at|naturaltime }}</time>
         </span>
       </li>
       {% endfor %}
     </ul>
     {% else %}
-    <div class="mt-4 py-8 text-center">
-      <i data-lucide="mouse-pointer-click" class="mx-auto h-6 w-6 text-stone-300"></i>
-      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">No clicks yet. Share the short link to start collecting analytics.</p>
+    <div class="mt-2 py-8 text-center">
+      <i data-lucide="mouse-pointer-click" class="mx-auto h-6 w-6 text-ink-faint"></i>
+      <p class="mt-2 body-sm text-ink-soft">No clicks yet. Share the short link to start collecting analytics.</p>
     </div>
     {% endif %}
   </div>
 
-  <p class="mt-6 text-xs text-stone-400">
+  <p class="mt-6 caption text-ink-faint">
     Click counts include bots, link previews, and automated requests — they do not represent unique human visitors.
   </p>
 
-  <div id="toast" data-toast hidden class="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-800 shadow-lg dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></div>
+  <div id="toast" data-toast hidden class="ds-toast"></div>
 </div>
 {% endblock %}

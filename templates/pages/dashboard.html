@@ -4,49 +4,39 @@
 {% block body %}
 <div class="flex min-h-screen">
   <!-- Sidebar -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-stone-200 bg-white p-4 lg:flex dark:border-stone-800 dark:bg-stone-950">
-    <a href="{% url 'dashboard' %}" class="mb-6 flex items-center gap-2 px-2 font-semibold tracking-tight">
-      <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600 text-white">
-        <i data-lucide="link" class="h-4 w-4"></i>
-      </span>
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-line bg-surface p-4 lg:flex">
+    <a href="{% url 'dashboard' %}" class="mb-6 flex items-center gap-2 px-2 font-bold tracking-tight text-ink">
+      <img src="{% static 'img/retie-app-icon.svg' %}" alt="" class="h-8 w-8 rounded-lg">
       Retie
     </a>
-    <nav class="flex flex-1 flex-col gap-1 text-sm">
-      <a href="{% url 'dashboard' %}" aria-current="page" class="flex items-center gap-3 rounded-lg bg-stone-100 px-3 py-2 font-medium text-stone-900 dark:bg-stone-800 dark:text-white">
-        <i data-lucide="layout-dashboard" class="h-4 w-4"></i> Dashboard
-      </a>
-      <a href="{% url 'profile' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
-        <i data-lucide="user" class="h-4 w-4"></i> Profile
-      </a>
-      <a href="{% url 'link_import' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
-        <i data-lucide="upload" class="h-4 w-4"></i> Import CSV
-      </a>
-      <a href="{% url 'link_export' %}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
-        <i data-lucide="download" class="h-4 w-4"></i> Export CSV
-      </a>
-      <div class="mt-2 border-t border-stone-200 pt-3 dark:border-stone-800">
-        <button type="button" data-theme-toggle class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
-          <i data-lucide="moon-star" class="h-4 w-4"></i> <span data-theme-label>Toggle theme</span>
+    <nav class="flex flex-1 flex-col gap-1" aria-label="Main">
+      <a href="{% url 'dashboard' %}" aria-current="page"
+         class="rt-nav-link"><i data-lucide="layout-dashboard" class="h-4 w-4"></i> Dashboard</a>
+      <a href="{% url 'profile' %}" class="rt-nav-link"><i data-lucide="user" class="h-4 w-4"></i> Profile</a>
+      <a href="{% url 'link_import' %}" class="rt-nav-link"><i data-lucide="upload" class="h-4 w-4"></i> Import CSV</a>
+      <a href="{% url 'link_export' %}" class="rt-nav-link"><i data-lucide="download" class="h-4 w-4"></i> Export CSV</a>
+      <div class="mt-2 border-t border-line pt-3">
+        <button type="button" data-theme-toggle class="rt-nav-link">
+          <i data-lucide="moon-star" class="h-4 w-4"></i>
+          <span data-theme-label>System</span>
         </button>
       </div>
       <div class="mt-auto">
         <form method="post" action="{% url 'logout' %}">
           {% csrf_token %}
-          <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
-            <i data-lucide="log-out" class="h-4 w-4"></i> Log out
-          </button>
+          <button type="submit" class="rt-nav-link text-left"><i data-lucide="log-out" class="h-4 w-4"></i> Log out</button>
         </form>
       </div>
     </nav>
   </aside>
 
   <!-- Mobile top bar -->
-  <header class="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-stone-200 bg-white px-4 lg:hidden dark:border-stone-800 dark:bg-stone-950">
-    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 font-semibold">
-      <span class="grid h-7 w-7 place-items-center rounded-lg bg-indigo-600 text-white"><i data-lucide="link" class="h-3.5 w-3.5"></i></span>
+  <header class="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-surface px-4 lg:hidden">
+    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 font-bold tracking-tight text-ink">
+      <img src="{% static 'img/retie-app-icon.svg' %}" alt="" class="h-7 w-7 rounded-lg">
       Retie
     </a>
-    <button type="button" class="rounded-lg p-2 text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800" data-toggle-sidebar aria-label="Toggle menu">
+    <button type="button" class="rt-nav-link" data-toggle-sidebar aria-label="Toggle menu">
       <i data-lucide="menu" class="h-5 w-5"></i>
     </button>
   </header>
@@ -57,10 +47,12 @@
       {% if messages %}
         <div class="mb-6 space-y-2">
           {% for message in messages %}
-          <div class="rounded-xl border px-4 py-3 text-sm
-            {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300
-            {% else %}border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300{% endif %}">
-            {{ message }}
+          <div class="rt-notice {% if message.tags == 'success' %}rt-notice-success{% elif message.tags == 'error' %}rt-notice-danger{% elif message.tags == 'warning' %}rt-notice-warning{% else %}rt-notice-info{% endif %}">
+            <i data-lucide="{% if message.tags == 'success' %}circle-check{% elif message.tags == 'error' %}octagon-alert{% elif message.tags == 'warning' %}triangle-alert{% else %}info{% endif %}"
+               class="rt-notice-icon h-5 w-5"></i>
+            <div class="rt-notice-body">
+              <p class="rt-notice-text">{{ message }}</p>
+            </div>
           </div>
           {% endfor %}
         </div>
@@ -68,65 +60,65 @@
 
       <!-- Stats -->
       <div class="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
-        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <div class="rt-card">
           <div class="flex items-center justify-between">
-            <p class="text-sm text-stone-500 dark:text-stone-400">Links</p>
-            <i data-lucide="link-2" class="h-4 w-4 text-stone-400"></i>
+            <p class="caption text-ink-soft">Links</p>
+            <i data-lucide="link-2" class="h-4 w-4 text-ink-faint"></i>
           </div>
-          <p class="mt-2 text-2xl font-semibold tracking-tight">{{ stats.total_links }}</p>
+          <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ stats.total_links }}</p>
         </div>
-        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <div class="rt-card">
           <div class="flex items-center justify-between">
-            <p class="text-sm text-stone-500 dark:text-stone-400">Active</p>
-            <i data-lucide="circle-check" class="h-4 w-4 text-emerald-500"></i>
+            <p class="caption text-ink-soft">Active</p>
+            <i data-lucide="circle-check" class="h-4 w-4 text-success"></i>
           </div>
-          <p class="mt-2 text-2xl font-semibold tracking-tight">{{ stats.active_links }}</p>
+          <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ stats.active_links }}</p>
         </div>
-        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <div class="rt-card">
           <div class="flex items-center justify-between">
-            <p class="text-sm text-stone-500 dark:text-stone-400">Total clicks</p>
-            <i data-lucide="mouse-pointer-click" class="h-4 w-4 text-stone-400"></i>
+            <p class="caption text-ink-soft">Total clicks</p>
+            <i data-lucide="mouse-pointer-click" class="h-4 w-4 text-ink-faint"></i>
           </div>
-          <p class="mt-2 text-2xl font-semibold tracking-tight">{{ stats.total_clicks }}</p>
+          <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ stats.total_clicks }}</p>
         </div>
-        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <div class="rt-card">
           <div class="flex items-center justify-between">
-            <p class="text-sm text-stone-500 dark:text-stone-400">Clicks, 14 days</p>
-            <i data-lucide="trending-up" class="h-4 w-4 text-stone-400"></i>
+            <p class="caption text-ink-soft">Clicks, 14 days</p>
+            <i data-lucide="trending-up" class="h-4 w-4 text-ink-faint"></i>
           </div>
-          <p class="mt-2 text-2xl font-semibold tracking-tight">{{ series_total }}</p>
+          <p class="mt-1 font-mono text-[26px] font-medium tracking-tight text-ink">{{ series_total }}</p>
         </div>
       </div>
 
       <div class="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]">
         <!-- Left column: links table -->
-        <section id="links-section" aria-label="Your links">
+        <section id="links-section" aria-label="Your links" class="min-w-0">
           {% include "links/_search_bar.html" %}
           {% include "links/_table.html" %}
 
           <!-- Bulk actions bar (app.js shows it once rows are selected) -->
           <form id="bulk-bar" method="post" action="{% url 'link_bulk' %}"
-                class="sticky bottom-4 mt-4 hidden items-center gap-3 rounded-2xl border border-stone-700 bg-stone-900/95 p-3 text-sm text-white shadow-lg dark:bg-neutral-900/95">
+                class="sticky bottom-4 mt-4 hidden flex-wrap items-center gap-2 rounded-full bg-ink p-3 pl-5 text-on-action shadow-md">
             {% csrf_token %}
             <input type="hidden" name="codes" id="bulk-codes" value="">
-            <span id="bulk-count" class="font-medium">0 selected</span>
+            <span id="bulk-count" class="caption font-semibold">0 selected</span>
             <button type="submit" name="action" value="activate"
-                    class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-medium hover:bg-emerald-500">Activate</button>
+                    class="rounded-full bg-success-soft px-3 py-1.5 caption font-semibold text-success hover:opacity-90">Activate</button>
             <button type="submit" name="action" value="deactivate"
-                    class="rounded-xl bg-stone-700 px-3 py-1.5 text-xs font-medium hover:bg-stone-600">Deactivate</button>
+                    class="rounded-full bg-surface px-3 py-1.5 caption font-semibold text-ink hover:opacity-90">Deactivate</button>
             <button type="submit" name="action" value="tag"
-                    class="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium hover:bg-indigo-500">Tag</button>
+                    class="rounded-full bg-violet-soft px-3 py-1.5 caption font-semibold text-violet-ink hover:opacity-90">Tag</button>
             <input type="text" name="tag" placeholder="tag names, comma-separated"
-                   class="w-44 rounded-xl border border-stone-600 bg-stone-800 px-2.5 py-1.5 text-xs text-white placeholder-stone-400 focus:border-indigo-500 focus:outline-none">
+                   class="w-44 rounded-full border border-line-strong bg-transparent px-3 py-1.5 caption text-on-action placeholder:text-on-action/50 focus:border-violet focus:outline-none">
             <button type="submit" name="action" value="trash"
-                    class="rounded-xl bg-red-700 px-3 py-1.5 text-xs font-medium hover:bg-red-600">Trash</button>
+                    class="rounded-full bg-danger px-3 py-1.5 caption font-semibold text-on-danger hover:opacity-90">Trash</button>
           </form>
         </section>
 
         <!-- Right column: chart + create form -->
-        <aside class="flex flex-col gap-6">
-          <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-            <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Clicks, last 14 days</h2>
+        <aside class="flex min-w-0 flex-col gap-6">
+          <div class="rt-card">
+            <h2 class="subheading text-ink">Clicks, last 14 days</h2>
             <div class="mt-4 h-40">
               <canvas id="dashboard-chart" aria-label="Clicks over the last 14 days"></canvas>
             </div>
@@ -136,16 +128,16 @@
           {% include "links/_form.html" %}
 
           {% if recent_clicks %}
-          <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-            <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Recent activity</h2>
-            <ul class="mt-4 space-y-3">
+          <div class="rt-card">
+            <h2 class="subheading text-ink">Recent activity</h2>
+            <ul class="mt-2 flex flex-col">
               {% for click in recent_clicks %}
-              <li class="flex items-center justify-between gap-3 text-sm">
-                <div class="flex min-w-0 items-center gap-2">
-                  <i data-lucide="mouse-pointer-click" class="h-4 w-4 shrink-0 text-stone-400"></i>
-                  <span class="truncate font-medium text-stone-700 dark:text-stone-200">/{{ click.link.code }}</span>
+              <li class="rt-row">
+                <span class="rt-row-lead text-ink-faint"><i data-lucide="mouse-pointer-click" class="h-4 w-4"></i></span>
+                <div class="rt-row-main">
+                  <span class="rt-row-title truncate">/{{ click.link.code }}</span>
                 </div>
-                <time class="shrink-0 text-xs text-stone-400" datetime="{{ click.created_at.isoformat }}">{{ click.created_at|timesince }} ago</time>
+                <time class="rt-row-meta" datetime="{{ click.created_at.isoformat }}">{{ click.created_at|timesince }}</time>
               </li>
               {% endfor %}
             </ul>
@@ -159,28 +151,27 @@
         served by link_qr at the owner's chosen colors. Tapping the code
         copies the short URL — same gesture as tapping it in the field.
       -->
-      <dialog id="qr-modal" class="fixed inset-0 m-auto h-fit w-72 max-w-[90vw] rounded-2xl bg-white p-0 text-stone-800 shadow-xl backdrop:bg-stone-950/60 dark:bg-stone-900 dark:text-stone-100">
+      <dialog id="qr-modal" class="fixed inset-0 m-auto h-fit w-72 max-w-[90vw] rounded-lg bg-surface p-0 text-ink shadow-md backdrop:bg-[#100C24]/60">
         <div class="p-6">
-          <p class="mb-4 text-sm font-medium text-stone-500 dark:text-stone-400">
-            QR code — <span id="qr-modal-code" class="text-stone-800 dark:text-stone-100"></span>
+          <p class="mb-4 body-sm text-ink-soft">
+            QR code — <span id="qr-modal-code" class="font-mono text-ink"></span>
           </p>
           <button type="button" id="qr-modal-copy"
-                  class="mx-auto block rounded-xl border border-stone-200 bg-white p-3 transition hover:border-indigo-400 dark:border-stone-700"
+                  class="mx-auto grid place-items-center rounded-md border border-line bg-mist p-3 transition hover:border-violet focus:border-violet"
                   aria-label="Tap to copy the short URL">
             <img id="qr-modal-image" alt="QR code for the short URL" class="h-44 w-44" src="" width="176" height="176">
           </button>
-          <p id="qr-modal-url" class="mt-4 truncate text-center text-xs text-stone-600 dark:text-stone-300"></p>
-          <p class="mt-1 text-center text-[11px] text-stone-400 dark:text-stone-500">Tap the code to copy the link</p>
-          <div class="mt-5 flex justify-end gap-2 text-sm">
+          <p id="qr-modal-url" class="mt-4 truncate text-center mono text-ink-soft"></p>
+          <p class="mt-1 text-center caption text-ink-faint">Tap the code to copy the link</p>
+          <div class="mt-5 flex justify-end gap-2">
             <a id="qr-modal-download" href="#" download
-               class="rounded-lg border border-stone-300 px-3 py-2 font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">Download SVG</a>
-            <button type="button" data-qr-close
-                    class="rounded-lg bg-indigo-600 px-3 py-2 font-medium text-white hover:bg-indigo-500">Close</button>
+               class="rt-btn rt-btn-sm rt-btn-secondary">Download SVG</a>
+            <button type="button" data-qr-close class="rt-btn rt-btn-sm rt-btn-primary">Close</button>
           </div>
         </div>
       </dialog>
 
-      <div id="toast" data-toast hidden class="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-800 shadow-lg dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"></div>
+      <div id="toast" data-toast hidden class="ds-toast"></div>
     </main>
   </div>
 </div>

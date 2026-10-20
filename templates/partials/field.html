@@ -1,0 +1,27 @@
+{% comment %}
+Reusable text field following the design system's TextField.
+Context: id, name, label (required); type, value, placeholder, hint,
+optional, required, autocomplete, spellcheck, input_mode, extra
+(raw attributes), errors (bound field errors or an error string).
+{% endcomment %}
+<div class="rt-field{% if errors %} is-invalid{% endif %}">
+  <label for="{{ id }}" class="rt-field-label">
+    <span>{{ label }}</span>
+    {% if optional %}<span class="rt-field-opt">optional</span>{% endif %}
+  </label>
+  <input type="{{ type|default:'text' }}" name="{{ name }}" id="{{ id }}"
+         value="{{ value|default:'' }}"
+         class="rt-input"
+         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+         {% if required %}required{% endif %}
+         {% if input_mode %}inputmode="{{ input_mode }}"{% endif %}
+         {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+         {% if spellcheck_off == True %}spellcheck="false"{% endif %}
+         {% if extra %}{{ extra }}{% endif %}>
+  {% if hint %}<p class="rt-field-hint">{{ hint }}</p>{% endif %}
+  {% if errors %}
+    {% for error in errors %}
+      <p class="rt-field-error">{{ error }}</p>
+    {% endfor %}
+  {% endif %}
+</div>

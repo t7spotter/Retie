@@ -4,36 +4,33 @@
 
 {% block body %}
 <div class="flex min-h-screen items-center justify-center px-4">
-  <div class="w-full max-w-sm rounded-2xl border border-stone-200 bg-white p-8 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+  <div class="rt-card is-raised w-full max-w-sm !p-8">
     <div class="mb-6 flex flex-col items-center text-center">
-      <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950">
-        <i data-lucide="lock" class="h-6 w-6 text-indigo-600 dark:text-indigo-400"></i>
+      <span class="rt-avatar rt-avatar-violet h-12 w-12 rounded-md">
+        <i data-lucide="lock" class="h-6 w-6"></i>
       </span>
-      <h1 class="mt-4 text-lg font-semibold tracking-tight text-stone-900 dark:text-white">
+      <h1 class="heading mt-4 text-ink">
         This link is protected
       </h1>
-      <p class="mt-2 break-all text-sm text-stone-500 dark:text-stone-400">
-        /{{ link.code }}{% if link.title %} — {{ link.title }}{% endif %}
+      <p class="mono mt-2 break-all text-ink-soft">
+        /{{ link.code }}{% if link.title %} · {{ link.title }}{% endif %}
       </p>
     </div>
 
     {% if messages %}
       {% for message in messages %}
-      <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-        {{ message }}
-      </div>
+      <div class="rt-notice rt-notice-danger mb-4">{{ message }}</div>
       {% endfor %}
     {% endif %}
 
-    <form method="post" class="space-y-4">
+    <form method="post" class="flex flex-col gap-4">
       {% csrf_token %}
-      <label class="block text-sm font-medium text-stone-700 dark:text-stone-200" for="password">
-        Password
-      </label>
-      <input type="password" id="password" name="password" required autofocus autocomplete="current-password"
-             class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-stone-900 placeholder-stone-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-white">
-      <button type="submit"
-              class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+      <div class="rt-field">
+        <label for="password" class="rt-field-label"><span>Password</span></label>
+        <input type="password" id="password" name="password" required autofocus autocomplete="current-password"
+               class="rt-input">
+      </div>
+      <button type="submit" class="rt-btn rt-btn-primary rt-btn-block">
         Unlock and continue
       </button>
     </form>

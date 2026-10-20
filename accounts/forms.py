@@ -5,12 +5,7 @@ from django.contrib.auth.models import User
 # One input look for the auth pages so fields line up with the full-width
 # submit buttons (Django's default widgets render browser-default widths,
 # which sit narrower than a w-full button).
-FIELD_CLASS = (
-    "w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm "
-    "outline-none transition-colors focus:border-indigo-400 focus:ring-2 "
-    "focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 "
-    "dark:text-stone-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40"
-)
+FIELD_CLASS = "rt-input"
 
 
 class _StyleMixin:

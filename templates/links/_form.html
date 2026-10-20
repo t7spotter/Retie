@@ -1,25 +1,34 @@
-<div id="create-form" class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-  <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">Create a short link</h2>
+<div id="create-form" class="rt-card">
+  <h2 class="subheading text-ink">Create a short link</h2>
 
   {% if created %}
-  <div class="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm dark:border-emerald-900 dark:bg-emerald-950/60">
-    <i data-lucide="circle-check" class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"></i>
-    <a href="{{ created_url }}" target="_blank" rel="noopener" class="min-w-0 flex-1 truncate font-medium text-emerald-800 dark:text-emerald-300">{{ created_url }}</a>
-    <button type="button" data-copy="{{ created_url }}"
-            class="shrink-0 rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-900"
-            aria-label="Copy short URL">
-      <i data-lucide="copy" class="h-4 w-4"></i>
-    </button>
+  <div class="rt-notice rt-notice-success">
+    <i data-lucide="circle-check" class="rt-notice-icon h-5 w-5"></i>
+    <div class="rt-notice-body">
+      <div class="flex min-w-0 items-center gap-2">
+        <a href="{{ created_url }}" target="_blank" rel="noopener"
+           class="min-w-0 flex-1 truncate font-medium text-success hover:underline">{{ created_url }}</a>
+        <button type="button" data-copy="{{ created_url }}"
+                class="shrink-0 rounded-sm p-1 text-success hover:bg-white/60"
+                aria-label="Copy short URL">
+          <i data-lucide="copy" class="h-4 w-4"></i>
+        </button>
+      </div>
+      <p class="rt-notice-text">Short URL ready.</p>
+    </div>
   </div>
   {% endif %}
 
   {% if duplicate_code %}
-  <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm dark:border-amber-900 dark:bg-amber-950/60">
-    <p class="font-medium text-amber-800 dark:text-amber-300">
-      <i data-lucide="alert-triangle" class="mr-1 inline h-4 w-4"></i>
-      Another short link, <a href="{% url 'link_edit' duplicate_code %}" class="font-semibold underline">/{{ duplicate_code }}</a>, already points to this destination.
-    </p>
-    <p class="mt-1 text-amber-700 dark:text-amber-400">Still create it? Submitting again will save.</p>
+  <div class="rt-notice rt-notice-warning">
+    <i data-lucide="triangle-alert" class="rt-notice-icon h-5 w-5"></i>
+    <div class="rt-notice-body">
+      <p class="rt-notice-title">Another short link already points here</p>
+      <p class="rt-notice-text">
+        <a href="{% url 'link_edit' duplicate_code %}" class="font-semibold text-ink underline">/{{ duplicate_code }}</a>
+        already points to this destination. Still create it? Submitting again will save.
+      </p>
+    </div>
   </div>
   {% endif %}
 
@@ -29,138 +38,158 @@
 
   <form method="post" action="{% url 'link_create' %}"
         hx-post="{% url 'link_create' %}" hx-target="#create-form" hx-swap="outerHTML"
-        class="mt-4 space-y-4">
+        class="mt-1 flex flex-col gap-4">
     {% csrf_token %}
     <!-- New links start active; the checkbox is only exposed on the edit page. -->
     <input type="hidden" name="is_active" value="on">
     {% if form.non_field_errors %}
-    <div class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/60 dark:text-red-400">
-      {{ form.non_field_errors }}
+    <div class="rt-notice rt-notice-danger" role="alert">
+      <i data-lucide="octagon-alert" class="rt-notice-icon h-5 w-5"></i>
+      <div class="rt-notice-body">
+        {{ form.non_field_errors }}
+      </div>
     </div>
     {% endif %}
 
-    <div>
-      <label for="id_destination" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Destination URL</label>
+    <div class="rt-field{% if form.destination.errors %} is-invalid{% endif %}">
+      <label for="id_destination" class="rt-field-label"><span>Destination URL</span></label>
       <input type="text" inputmode="url" name="destination" id="id_destination"
              value="{{ form.destination.value|default:'' }}" required
              placeholder="https://example.com/very/long/page"
              autocomplete="off"
-             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.destination.errors %}border-red-400 dark:border-red-500{% endif %}">
+             class="rt-input">
       {% for error in form.destination.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
-      <details class="mt-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-stone-700 dark:bg-stone-800/60" {% if form.variant_b.value or link.variant_b %}open{% endif %}>
-        <summary class="cursor-pointer text-sm font-medium text-stone-700 dark:text-stone-300">A/B split test <span class="font-normal text-stone-400">(optional)</span></summary>
+      <details class="rounded-md bg-mist px-4 py-3" {% if form.variant_b.value or link.variant_b %}open{% endif %}>
+        <summary class="-mx-1 cursor-pointer select-none rounded-sm px-1 body-sm font-semibold text-ink">A/B split test <span class="body-sm font-normal text-ink-soft">(optional)</span></summary>
         <div class="mt-3">
-          <label for="id_variant_b" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Variant B destination <span class="font-normal text-stone-400">(empty = no test)</span></label>
-          <input type="text" inputmode="url" name="variant_b" id="id_variant_b"
-                 value="{{ form.variant_b.value|default:'' }}"
-                 placeholder="https://example.com/alt-page"
-                 autocomplete="off"
-                 class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.variant_b.errors %}border-red-400 dark:border-red-500{% endif %}">
-          <p class="mt-1.5 text-xs text-stone-400">When set, visitors go to variant A (the destination above) or B roughly 50/50, and the analytics page counts clicks per variant.</p>
-          {% for error in form.variant_b.errors %}
-          <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
-          {% endfor %}
+          <div class="rt-field{% if form.variant_b.errors %} is-invalid{% endif %}">
+            <label for="id_variant_b" class="rt-field-label">
+              <span>Variant B destination</span>
+              <span class="rt-field-opt">empty = no test</span>
+            </label>
+            <input type="text" inputmode="url" name="variant_b" id="id_variant_b"
+                   value="{{ form.variant_b.value|default:'' }}"
+                   placeholder="https://example.com/alt-page"
+                   autocomplete="off"
+                   class="rt-input">
+            <p class="rt-field-hint">When set, visitors go to variant A (the destination above) or B roughly 50/50, and the analytics page counts clicks per variant.</p>
+            {% for error in form.variant_b.errors %}
+            <p class="rt-field-error">{{ error }}</p>
+            {% endfor %}
+          </div>
         </div>
       </details>
     </div>
 
-    <div>
-      <label for="id_code" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Custom alias <span class="font-normal text-stone-400">(optional)</span></label>
-      <div class="flex items-center overflow-hidden rounded-xl border border-stone-300 bg-white focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus-within:border-indigo-500 dark:focus-within:ring-indigo-900/40 {% if form.code.errors %}border-red-400 dark:border-red-500{% endif %}">
-        <span class="border-r border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">{{ SITE_URL }}/
-        </span>
+    <div class="rt-field{% if form.code.errors %} is-invalid{% endif %}">
+      <label for="id_code" class="rt-field-label">
+        <span>Custom alias</span>
+        <span class="rt-field-opt">optional</span>
+      </label>
+      <div class="flex items-stretch overflow-hidden rounded-md border border-line-strong bg-surface transition-colors focus-within:border-violet focus-within:shadow-[var(--focus-ring)] {% if form.code.errors %}border-danger{% endif %}">
+        <span class="mono-sm whitespace-nowrap border-r border-line bg-mist px-3 leading-10 text-ink-soft">{{ SITE_URL }}/</span>
         <input type="text" name="code" id="id_code" value="{{ form.code.value|default:'' }}"
                autocomplete="off" spellcheck="false"
                placeholder="campaign or blank for auto"
-               class="w-full border-0 bg-transparent px-2 py-2 text-sm focus:outline-none focus:ring-0">
+               class="w-full min-w-0 border-0 bg-transparent px-3 font-mono text-[15px] text-ink placeholder:text-ink-faint focus:shadow-none focus:outline-none">
       </div>
       {% for error in form.code.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
       {% if extra_domains %}
-      <div class="mt-3">
-        <label for="id_domain" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Domain <span class="font-normal text-stone-400">(optional)</span></label>
-        <select name="domain" id="id_domain"
-                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-white">
+      <div class="rt-field mt-3">
+        <label for="id_domain" class="rt-field-label">
+          <span>Domain</span>
+          <span class="rt-field-opt">optional</span>
+        </label>
+        <select name="domain" id="id_domain" class="rt-input">
           <option value="">Default ({{ SITE_URL }})</option>
           {% for host in extra_domains %}
           <option value="{{ host }}" {% if form.domain.value == host %}selected{% endif %}>{{ host }}</option>
           {% endfor %}
         </select>
-        <p class="mt-1.5 text-xs text-stone-400">The link works only on the chosen domain, and its QR code points there.</p>
+        <p class="rt-field-hint">The link works only on the chosen domain, and its QR code points there.</p>
       </div>
       {% endif %}
     </div>
 
-    <div>
-      <label for="id_title" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Title <span class="font-normal text-stone-400">(optional)</span></label>
+    <div class="rt-field{% if form.title.errors %} is-invalid{% endif %}">
+      <label for="id_title" class="rt-field-label">
+        <span>Title</span>
+        <span class="rt-field-opt">optional</span>
+      </label>
       <input type="text" name="title" id="id_title" value="{{ form.title.value|default:'' }}"
              placeholder="Spring campaign"
-             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.title.errors %}border-red-400 dark:border-red-500{% endif %}">
+             class="rt-input">
       {% for error in form.title.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
     </div>
 
-    <div>
-      <label for="id_expires_at" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Expires at <span class="font-normal text-stone-400">(optional)</span></label>
+    <div class="rt-field{% if form.expires_at.errors %} is-invalid{% endif %}">
+      <label for="id_expires_at" class="rt-field-label">
+        <span>Expires at</span>
+        <span class="rt-field-opt">optional</span>
+      </label>
       <input type="datetime-local" name="expires_at" id="id_expires_at"
              value="{{ form.expires_at.value|date:'Y-m-dTH:i'|default:'' }}"
-             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:[color-scheme:dark] dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.expires_at.errors %}border-red-400 dark:border-red-500{% endif %}">
+             class="rt-input">
       <button type="button" data-clear-picker="id_expires_at"
-              class="mt-1.5 text-xs text-stone-400 hover:text-stone-600 hover:underline dark:text-stone-500 dark:hover:text-stone-300">Clear date &amp; time</button>
+              class="self-start caption text-ink-faint hover:text-ink-soft hover:underline">Clear date &amp; time</button>
       {% for error in form.expires_at.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
     </div>
 
-    <div>
-      <label for="id_goes_live_at" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Goes live at <span class="font-normal text-stone-400">(optional)</span></label>
+    <div class="rt-field{% if form.goes_live_at.errors %} is-invalid{% endif %}">
+      <label for="id_goes_live_at" class="rt-field-label">
+        <span>Goes live at</span>
+        <span class="rt-field-opt">optional</span>
+      </label>
       <input type="datetime-local" name="goes_live_at" id="id_goes_live_at"
              value="{{ form.goes_live_at.value|date:'Y-m-dTH:i'|default:'' }}"
-             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:[color-scheme:dark] dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.goes_live_at.errors %}border-red-400 dark:border-red-500{% endif %}">
+             class="rt-input">
       <button type="button" data-clear-picker="id_goes_live_at"
-              class="mt-1.5 text-xs text-stone-400 hover:text-stone-600 hover:underline dark:text-stone-500 dark:hover:text-stone-300">Clear date &amp; time</button>
+              class="self-start caption text-ink-faint hover:text-ink-soft hover:underline">Clear date &amp; time</button>
       {% for error in form.goes_live_at.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
     </div>
 
-    <div>
-      <label for="id_tags" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Tags <span class="font-normal text-stone-400">(optional, comma-separated)</span></label>
+    <div class="rt-field{% if form.tags.errors %} is-invalid{% endif %}">
+      <label for="id_tags" class="rt-field-label">
+        <span>Tags</span>
+        <span class="rt-field-opt">optional, comma-separated</span>
+      </label>
       <input type="text" name="tags" id="id_tags" value="{{ form.tags.value|default:'' }}"
              placeholder="docs, marketing"
              autocomplete="off"
-             class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.tags.errors %}border-red-400 dark:border-red-500{% endif %}">
+             class="rt-input">
       {% for error in form.tags.errors %}
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="rt-field-error">{{ error }}</p>
       {% endfor %}
     </div>
 
-    <details class="rounded-xl border border-stone-200 dark:border-stone-700" {% if form.utm_source.value or form.utm_medium.value or form.utm_campaign.value %}open{% endif %}>
-      <summary class="cursor-pointer px-3 py-2.5 text-sm font-medium text-stone-700 dark:text-stone-200 select-none">
-        UTM builder <span class="font-normal text-stone-400">(optional)</span>
+    <details class="rounded-md bg-mist px-4 py-3" {% if form.utm_source.value or form.utm_medium.value or form.utm_campaign.value %}open{% endif %}>
+      <summary class="-mx-1 cursor-pointer select-none rounded-sm px-1 body-sm font-semibold text-ink">
+        UTM builder <span class="body-sm font-normal text-ink-soft">(optional)</span>
       </summary>
-      <div class="space-y-3 px-3 pb-3">
+      <div class="mt-3 flex flex-col gap-3">
         <input type="text" name="utm_source" id="id_utm_source" value="{{ form.utm_source.value|default:'' }}"
-               placeholder="Source, e.g. newsletter"
-               class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40">
+               placeholder="Source, e.g. newsletter" class="rt-input">
         <input type="text" name="utm_medium" id="id_utm_medium" value="{{ form.utm_medium.value|default:'' }}"
-               placeholder="Medium, e.g. email"
-               class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40">
+               placeholder="Medium, e.g. email" class="rt-input">
         <input type="text" name="utm_campaign" id="id_utm_campaign" value="{{ form.utm_campaign.value|default:'' }}"
-               placeholder="Campaign, e.g. spring-launch"
-               class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40">
-        <p class="text-xs text-stone-400">Appended to the destination at save time. Existing UTM parts are kept.</p>
+               placeholder="Campaign, e.g. spring-launch" class="rt-input">
+        <p class="rt-field-hint">Appended to the destination at save time. Existing UTM parts are kept.</p>
       </div>
     </details>
 
-    <button type="submit"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+    <button type="submit" class="rt-btn rt-btn-primary rt-btn-block">
       <i data-lucide="scissors" class="h-4 w-4"></i> {% if duplicate_code or form.confirm_duplicate.value %}Create anyway{% else %}Shorten URL{% endif %}
     </button>
-    <p class="text-center text-xs text-stone-400">Only http:// and https:// destinations are accepted.</p>
+    <p class="text-center caption text-ink-faint">Only http:// and https:// destinations are accepted.</p>
   </form>
 </div>

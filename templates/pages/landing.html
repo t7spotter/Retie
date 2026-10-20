@@ -4,22 +4,20 @@
 {% block body %}
 <div class="flex min-h-screen flex-col">
   <!-- Header -->
-  <header class="border-b border-stone-200 bg-white/80 backdrop-blur dark:border-stone-800 dark:bg-stone-950/80">
+  <header class="border-b border-line bg-surface/80 backdrop-blur">
     <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-      <a href="{% if LANDING_ENABLED %}{% url 'landing' %}{% else %}{% url 'dashboard' %}{% endif %}" class="flex items-center gap-2 font-semibold tracking-tight">
-        <span class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600 text-white">
-          <i data-lucide="link" class="h-4 w-4"></i>
-        </span>
+      <a href="{% if LANDING_ENABLED %}{% url 'landing' %}{% else %}{% url 'dashboard' %}{% endif %}"
+         class="flex items-center gap-2.5 font-bold tracking-tight text-ink">
+        <img src="{% static 'img/retie-app-icon.svg' %}" alt="" class="h-8 w-8 rounded-lg">
         Retie
       </a>
-      <nav class="flex items-center gap-2 sm:gap-4">
-        <button type="button" data-theme-toggle
-                class="grid h-9 w-9 place-items-center rounded-lg text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-800 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-stone-100"
-                aria-label="Toggle dark mode" title="Toggle dark mode">
+      <nav class="flex items-center gap-2">
+        <button type="button" data-theme-toggle class="rt-nav-link" aria-label="Theme: system" title="Theme">
           <i data-lucide="moon-star" class="h-4 w-4"></i>
+          <span data-theme-label class="hidden sm:inline">System</span>
         </button>
-        <a href="{% url 'login' %}" class="rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">Log in</a>
-        <a href="{% url 'register' %}" class="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500">Create account</a>
+        <a href="{% url 'login' %}" class="rt-nav-link">Log in</a>
+        <a href="{% url 'register' %}" class="rt-btn rt-btn-sm rt-btn-primary">Create account</a>
       </nav>
     </div>
   </header>
@@ -29,62 +27,58 @@
     <section class="mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pt-20">
       <div class="grid items-center gap-12 lg:grid-cols-2">
         <div>
-          <p class="mb-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
-            <i data-lucide="lock" class="h-3.5 w-3.5"></i> Self-hosted, your data, your domain
+          <p class="rt-tag rt-tag-violet mb-4 h-7 px-3">
+            <span class="rt-tag-dot"></span> Self-hosted, your data, your domain
           </p>
-          <h1 class="text-4xl font-semibold leading-tight tracking-tight text-stone-900 sm:text-5xl dark:text-white">
+          <h1 class="display -mb-1 text-4xl sm:text-5xl text-ink">
             Own your short links.
           </h1>
-          <p class="mt-4 max-w-lg text-pretty text-lg text-stone-600 dark:text-stone-400">
+          <p class="body-lg mt-6 max-w-lg text-ink-soft">
             Retie is a privacy-conscious URL shortener you run on your own server — own domain, own database, own analytics. Simple, fast, and fully under your control.
           </p>
           <div class="mt-8 flex flex-wrap gap-3">
-            <a href="{% url 'register' %}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-500">
+            <a href="{% url 'register' %}" class="rt-btn rt-btn-lg rt-btn-primary">
               <i data-lucide="rocket" class="h-4 w-4"></i> Get started free
             </a>
-            <a href="{% url 'login' %}" class="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800">
-              Log in
-            </a>
+            <a href="{% url 'login' %}" class="rt-btn rt-btn-lg rt-btn-secondary">Log in</a>
           </div>
         </div>
 
         <!-- Product preview: a still of the dashboard, kept intentionally static -->
         <div class="relative">
-          <div class="pointer-events-none absolute -inset-6 rounded-3xl bg-gradient-to-br from-indigo-100 to-transparent opacity-70 dark:from-indigo-950/40"></div>
-          <div class="relative overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xl dark:border-stone-800 dark:bg-stone-900">
-            <div class="flex items-center gap-2 border-b border-stone-100 px-4 py-3 dark:border-stone-800">
-              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-              <span class="h-2.5 w-2.5 rounded-full bg-stone-300 dark:bg-stone-700"></span>
-              <div class="ml-3 flex-1 rounded-md bg-stone-100 py-1 text-center text-xs text-stone-400 dark:bg-stone-800">{{ SITE_URL }}</div>
+          <div class="pointer-events-none absolute -inset-6 rounded-lg bg-mist opacity-60" aria-hidden="true"></div>
+          <div class="rt-card is-raised relative !p-0 overflow-hidden">
+            <div class="flex items-center gap-2 border-b border-line px-4 py-3">
+              <span class="h-2.5 w-2.5 rounded-full bg-line-strong"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-line-strong"></span>
+              <span class="h-2.5 w-2.5 rounded-full bg-line-strong"></span>
+              <div class="mono-sm ml-3 flex-1 truncate rounded-full bg-mist px-3 py-1 text-center text-ink-soft">{{ SITE_URL }}</div>
             </div>
             <div class="grid gap-4 p-4 sm:grid-cols-3">
-              <div class="rounded-xl border border-stone-200 p-3 dark:border-stone-800">
-                <p class="text-xs text-stone-400">Links</p>
-                <p class="text-xl font-semibold">24</p>
+              <div class="rounded-md border border-line p-3">
+                <p class="caption text-ink-faint">Links</p>
+                <p class="mono mt-1 text-lg font-medium text-ink">24</p>
               </div>
-              <div class="rounded-xl border border-stone-200 p-3 dark:border-stone-800">
-                <p class="text-xs text-stone-400">Clicks</p>
-                <p class="text-xl font-semibold">1,205</p>
+              <div class="rounded-md border border-line p-3">
+                <p class="caption text-ink-faint">Clicks</p>
+                <p class="mono mt-1 text-lg font-medium text-ink">1,205</p>
               </div>
-              <div class="rounded-xl border border-stone-200 p-3 dark:border-stone-800">
-                <p class="text-xs text-stone-400">Active</p>
-                <p class="text-xl font-semibold">21</p>
+              <div class="rounded-md border border-line p-3">
+                <p class="caption text-ink-faint">Active</p>
+                <p class="mono mt-1 text-lg font-medium text-ink">21</p>
               </div>
             </div>
-            <div class="space-y-2 px-4 pb-5">
+            <div class="flex flex-col gap-2 px-4 pb-5">
               {% for item in preview_items %}
-              <div class="flex items-center justify-between rounded-lg border border-stone-200 px-3 py-2 dark:border-stone-800">
-                <div class="flex items-center gap-3 overflow-hidden">
-                  <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                    <i data-lucide="{{ item.icon }}" class="h-3.5 w-3.5"></i>
-                  </span>
-                  <div class="min-w-0">
-                    <p class="truncate text-sm font-medium text-stone-700 dark:text-stone-200">{{ item.title }}</p>
-                    <p class="truncate text-xs text-stone-400">{{ SITE_URL }}/{{ item.code }}</p>
-                  </div>
+              <div class="rt-row rounded-md border px-2">
+                <span class="rt-avatar rt-avatar-violet h-7 w-7 text-xs">
+                  <i data-lucide="{{ item.icon }}" class="h-3.5 w-3.5"></i>
+                </span>
+                <div class="rt-row-main">
+                  <span class="rt-row-title">{{ item.title }}</span>
+                  <span class="mono-sm truncate text-ink-faint">{{ SITE_URL }}/{{ item.code }}</span>
                 </div>
-                <span class="ml-2 shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">active</span>
+                <span class="rt-tag rt-tag-success"><span class="rt-tag-dot"></span>active</span>
               </div>
               {% endfor %}
             </div>
@@ -95,15 +89,15 @@
 
     <!-- Features -->
     <section class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-      <h2 class="text-center text-2xl font-semibold tracking-tight">Everything you need, nothing you don't</h2>
+      <h2 class="title text-center text-ink">Everything you need, nothing you don't</h2>
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {% for feature in features %}
-        <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-          <span class="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+        <div class="rt-card">
+          <span class="rt-avatar rt-avatar-violet h-10 w-10 rounded-md">
             <i data-lucide="{{ feature.icon }}" class="h-5 w-5"></i>
           </span>
-          <h3 class="mt-4 font-semibold text-stone-900 dark:text-white">{{ feature.title }}</h3>
-          <p class="mt-1.5 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{{ feature.text }}</p>
+          <h3 class="label mt-2 text-ink">{{ feature.title }}</h3>
+          <p class="body-sm mt-1.5 text-ink-soft">{{ feature.text }}</p>
         </div>
         {% endfor %}
       </div>
@@ -111,20 +105,18 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+  <footer class="border-t border-line bg-surface">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
-      <div class="flex items-center gap-2 text-sm font-semibold text-stone-700 dark:text-stone-300">
-        <span class="grid h-6 w-6 place-items-center rounded-md bg-indigo-600 text-white">
-          <i data-lucide="link" class="h-3 w-3"></i>
-        </span>
+      <div class="flex items-center gap-2.5 font-bold text-ink">
+        <img src="{% static 'img/retie-app-icon.svg' %}" alt="" class="h-6 w-6 rounded-md">
         Retie
       </div>
-      <p class="text-center text-sm text-stone-500 dark:text-stone-400">
+      <p class="body-sm text-center text-ink-soft">
         Self-hosted analytics may include bots. Click counts are not unique visitors.
       </p>
-      <div class="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-400">
-        <a href="{% url 'login' %}" class="hover:text-stone-800 dark:hover:text-stone-200">Log in</a>
-        <a href="{% url 'register' %}" class="hover:text-stone-800 dark:hover:text-stone-200">Register</a>
+      <div class="flex items-center gap-4 body-sm text-ink-soft">
+        <a href="{% url 'login' %}" class="hover:underline">Log in</a>
+        <a href="{% url 'register' %}" class="hover:underline">Register</a>
       </div>
     </div>
   </footer>

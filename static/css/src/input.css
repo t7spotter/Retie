@@ -2,189 +2,409 @@
  * Tailwind CSS entry point. Build with:
  *   npx @tailwindcss/cli -i static/css/src/input.css -o static/css/app.css --minify
  * The compiled output is committed so development and Docker don't need Node.
+ *
+ * The visual language is the Retie design system (retie-design-system.html):
+ * ink-on-paper with violet reserved for selection/focus, one coral highlight,
+ * DM Mono for numbers/dates, and dark mode driven by <html data-theme="dark">.
  */
 @import "tailwindcss";
 
-/* Class-based dark mode: <html class="dark"> is set by the theme script. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Dark mode: the pre-paint script in base.html resolves the stored
+   system/light/dark preference to an explicit data-theme attribute.
+   Without a data-theme attribute (no JS) the token media query below
+   follows the OS preference instead. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/*
- * Brand palette (twine.net):
- *   #213A57 navy · #0B6477 deep teal · #14919B teal · #0AD1C8 cyan
- *   #45DFB1 mint · #80ED99 green
- *
- * The UI is written against Tailwind's stone (neutral) and indigo (accent)
- * names, with emerald for success states and amber/red untouched. Mapping
- * the palette onto those names here restyles every component at once while
- * the templates stay readable.
- */
-@theme {
-  /* Neutral: greys hue-shifted into the palette's own teal range so both
-     light and dark modes are "made of" the brand colors: light surfaces
-     take a faint teal cast, and dark mode is teal-black night (950 page,
-     900 cards, mid steps stay quiet so borders read as shade, not stripes). */
-  --color-stone-50: #f1f7f8;
-  --color-stone-100: #e2eef0;
-  --color-stone-200: #c3d6da;
-  --color-stone-300: #9fb6ba;
-  --color-stone-400: #7b989e;
-  --color-stone-500: #49656d;
-  --color-stone-600: #2b6165;
-  --color-stone-700: #164a52;
-  --color-stone-800: #0e353c;
-  --color-stone-900: #0a262c;
-  --color-stone-950: #061a1e;
+/* ---- Fonts (vendored in static/fonts/, extracted from the design system) -- */
 
-  /* Accent: primary actions deep teal, highlights cyan/mint. */
-  --color-indigo-50: #e7f9f5;
-  --color-indigo-100: #c9f4ec;
-  --color-indigo-200: #a7efe1;
-  --color-indigo-300: #45dfb1;
-  --color-indigo-400: #0ad1c8;
-  --color-indigo-500: #14919b;
-  --color-indigo-600: #0b6477;
-  --color-indigo-700: #085562;
-  --color-indigo-800: #0a4a58;
-  --color-indigo-900: #0a404d;
-  --color-indigo-950: #083540;
-
-  /* Success greens: the palette's #80ED99 / #45DFB1 plus derived shades. */
-  --color-emerald-50: #e9fbf3;
-  --color-emerald-100: #cff6e2;
-  --color-emerald-200: #a9efcb;
-  --color-emerald-300: #80ed99;
-  --color-emerald-400: #45dfb1;
-  --color-emerald-500: #1fbf9f;
-  --color-emerald-600: #148f79;
-  --color-emerald-700: #0f7463;
-  --color-emerald-800: #0e5d52;
-  --color-emerald-900: #10483f;
-  --color-emerald-950: #0d332e;
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("../fonts/bricolage-grotesque-var.woff2") format("woff2-variations");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("../fonts/dm-mono-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("../fonts/dm-mono-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
+/* ---- Design tokens (verbatim from the design system) ---------------------- */
+
+:root { --paper: #FBF8FF; --surface: #FFFFFF; --mist: #F0E9FF; --line: #E3DCF2; --line-strong: #8C84AE; --ink: #1D1740; --ink-soft: #575079; --ink-faint: #6E6790; --action: var(--ink); --on-action: var(--paper); --ring-violet: #6C4DFF; --ring-lilac: #B35CF2; --ring-coral: #FF5C9A; --ring-apricot: #FFB07A; --tile-violet: #7C5CFF; --tile-pink: #FF6FA8; --tile-peach: #FFB48A; --violet: var(--ring-violet); --violet-ink: #5536E8; --violet-soft: #ECE6FF; --on-violet: #FFFFFF; --coral: var(--ring-coral); --coral-ink: #C21F62; --coral-soft: #FFE3EE; --apricot: var(--ring-apricot); --apricot-soft: #FFEBDC; --on-accent: #1D1740; --success: #0B7470; --success-soft: #DDF3F1; --warning: #8A5300; --warning-soft: #FFF0D4; --danger: #C8102E; --danger-soft: #FFE4E6; --on-danger: #FFFFFF; --shadow-sm: 0 1px 2px #1d174014, 0 2px 8px #1d17400f; --shadow-md: 0 2px 4px #1d17400f, 0 12px 24px -8px #1d174029; --shadow-lift: 0 24px 48px -16px rgba(88, 56, 200, 0.45); --focus-ring: 0 0 0 2px #FBF8FF, 0 0 0 4px #6C4DFF; --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px; --radius-sm: 6px; --radius-md: 12px; --radius-lg: 20px; --radius-tile: 23.6%; --radius-full: 999px; --border-hair: 1px; --border-control: 1.5px; --border-ring: 2px; --font-sans: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #100C24; --surface: #1D1740; --mist: #241D4E; --line: #332B66; --line-strong: #7E75B0; --ink: #F3EFFF; --ink-soft: #B8B0DA; --ink-faint: #9189BC; --action: var(--ink); --on-action: var(--paper); --ring-violet: #6C4DFF; --ring-lilac: #B35CF2; --ring-coral: #FF5C9A; --ring-apricot: #FFB07A; --tile-violet: #7C5CFF; --tile-pink: #FF6FA8; --tile-peach: #FFB48A; --violet: #9F8AFF; --violet-ink: #B3A3FF; --violet-soft: #2B2270; --on-violet: #100C24; --coral: #FF6FA8; --coral-ink: #FF8CBA; --coral-soft: #3D1530; --apricot: #FFB48A; --apricot-soft: #3A2216; --on-accent: #100C24; --success: #5CD6CF; --success-soft: #0E3533; --warning: #FFC266; --warning-soft: #3A2A0C; --danger: #FF8A94; --danger-soft: #45121C; --on-danger: #100C24; --shadow-sm: 0 1px 2px #00000066; --shadow-md: 0 12px 24px -8px #000000b3; --shadow-lift: 0 24px 48px -16px rgba(0, 0, 0, 0.7); --focus-ring: 0 0 0 2px #100C24, 0 0 0 4px #9F8AFF; color-scheme: dark; } }
+:root[data-theme="dark"] { --paper: #100C24; --surface: #1D1740; --mist: #241D4E; --line: #332B66; --line-strong: #7E75B0; --ink: #F3EFFF; --ink-soft: #B8B0DA; --ink-faint: #9189BC; --action: var(--ink); --on-action: var(--paper); --ring-violet: #6C4DFF; --ring-lilac: #B35CF2; --ring-coral: #FF5C9A; --ring-apricot: #FFB07A; --tile-violet: #7C5CFF; --tile-pink: #FF6FA8; --tile-peach: #FFB48A; --violet: #9F8AFF; --violet-ink: #B3A3FF; --violet-soft: #2B2270; --on-violet: #100C24; --coral: #FF6FA8; --coral-ink: #FF8CBA; --coral-soft: #3D1530; --apricot: #FFB48A; --apricot-soft: #3A2216; --on-accent: #100C24; --success: #5CD6CF; --success-soft: #0E3533; --warning: #FFC266; --warning-soft: #3A2A0C; --danger: #FF8A94; --danger-soft: #45121C; --on-danger: #100C24; --shadow-sm: 0 1px 2px #00000066; --shadow-md: 0 12px 24px -8px #000000b3; --shadow-lift: 0 24px 48px -16px rgba(0, 0, 0, 0.7); --focus-ring: 0 0 0 2px #100C24, 0 0 0 4px #9F8AFF; color-scheme: dark; }
+
+/* ---- Map tokens onto Tailwind's theme so token utilities generate ---------
+   (bg-paper, text-ink, border-line, bg-violet-soft, text-danger, ...).
+   `inline` makes the utilities reference the runtime variable directly,
+   so every mapped utility flips with the theme. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-mist: var(--mist);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-action: var(--action);
+  --color-on-action: var(--on-action);
+  --color-violet: var(--violet);
+  --color-violet-ink: var(--violet-ink);
+  --color-violet-soft: var(--violet-soft);
+  --color-on-violet: var(--on-violet);
+  --color-coral: var(--coral);
+  --color-coral-ink: var(--coral-ink);
+  --color-coral-soft: var(--coral-soft);
+  --color-apricot: var(--apricot);
+  --color-apricot-soft: var(--apricot-soft);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-on-danger: var(--on-danger);
+}
+
+/* Font stacks in plain @theme (same strings as the tokens above; a var()
+   reference here would emit a self-referencing custom property). */
+@theme {
+  --font-sans: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ---- Typography scale ------------------------------------------------------ */
+
+.display-xl { font-family: var(--font-sans); font-size: 72px; line-height: 68px; font-weight: 800; letter-spacing: -0.045em; }
+.display { font-family: var(--font-sans); font-size: 48px; line-height: 48px; font-weight: 800; letter-spacing: -0.04em; }
+.title { font-family: var(--font-sans); font-size: 32px; line-height: 36px; font-weight: 700; letter-spacing: -0.03em; }
+.heading { font-family: var(--font-sans); font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: -0.015em; }
+.subheading { font-family: var(--font-sans); font-size: 17px; line-height: 24px; font-weight: 600; letter-spacing: -0.005em; }
+.body-lg { font-family: var(--font-sans); font-size: 18px; line-height: 28px; font-weight: 400; }
+.body { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 400; }
+.body-sm { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 400; }
+.label { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 600; }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
+.mono { font-family: var(--font-mono); font-size: 13px; line-height: 20px; font-weight: 400; }
+.mono-sm { font-family: var(--font-mono); font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.02em; }
+
 @layer base {
-  /* Django-rendered form widgets (login, register, password forms) get the
-     same styling as the hand-written inputs. */
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--violet-ink); }
+  code, kbd { font-family: var(--font-mono); font-size: .875em; }
+
+  /* Every interactive control shows the design system's focus ring. */
+  :focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+
+  ::selection { background: var(--violet-soft); color: var(--ink); }
+
+  /*
+   * Django-rendered widgets (auth and password forms) get the rt-input look
+   * without per-template classes. Bare inputs keep the 48px control height;
+   * contexts that need smaller controls override locally (Flatpickr below).
+   */
   input[type="text"],
   input[type="search"],
   input[type="email"],
   input[type="password"],
   input[type="url"],
   input[type="number"],
+  input[type="tel"],
   input[type="datetime-local"],
+  select,
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    border: var(--border-control) solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 16px;
+    transition: border-color .15s ease;
+  }
+  input[type="text"], input[type="search"], input[type="email"], input[type="password"],
+  input[type="url"], input[type="number"], input[type="tel"] {
+    height: 48px;
+  }
+  textarea { padding: var(--space-3) var(--space-4); min-height: 96px; }
+  input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+  input[type="text"]:not(.flatpickr-input):hover, input[type="search"]:hover, input[type="email"]:hover,
+  input[type="password"]:hover, input[type="url"]:hover, input[type="number"]:hover, input[type="tel"]:hover,
+  textarea:hover, select:hover { border-color: var(--ink-soft); }
+  input[type="text"]:not(.flatpickr-input):focus-visible, input[type="search"]:focus-visible, input[type="email"]:focus-visible,
+  input[type="password"]:focus-visible, input[type="url"]:focus-visible, input[type="number"]:focus-visible,
+  input[type="tel"]:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid transparent;
+    border-color: var(--violet);
+    box-shadow: var(--focus-ring);
+  }
   select {
-    @apply rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-800 outline-none transition-colors
-           placeholder:text-stone-400
-           focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100
-           dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40;
+    height: 48px;
+    appearance: none;
+    padding-right: var(--space-8);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23575079' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--space-4) center;
+    background-size: 18px 18px;
   }
-
-  input[type="datetime-local"] {
-    @apply dark:[color-scheme:dark];
-  }
+  /* Django-form error lists read like rt-field-error entries. */
+  .errorlist { list-style: none; margin: var(--space-1) 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--danger); }
 
   /*
-   * Checkboxes: fully custom so color and form match the inputs —
-   * rounded square in the input's border color, filling with the accent
-   * (deep teal) and a white check when selected. appearance-none because
-   * the forms plugin isn't part of this build.
+   * Checkboxes: rounded square in the control border color, filling with
+   * violet (the selection color) and an on-violet check when selected.
    */
   input[type="checkbox"] {
     appearance: none;
-    @apply h-4 w-4 shrink-0 cursor-pointer rounded-[5px] border border-stone-400 bg-white transition-colors
-           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500
-           dark:border-stone-600 dark:bg-stone-800;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    border: var(--border-control) solid var(--line-strong);
+    background: var(--surface);
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 90% 90%;
+    background-size: 11px 11px;
+    transition: background-color .15s ease, border-color .15s ease;
   }
-
-  input[type="checkbox"]:checked {
-    @apply border-indigo-600 bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-600;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
-  }
-
-  /* Select-all header: thick dash on the filled box. */
+  input[type="checkbox"]:checked,
   input[type="checkbox"]:indeterminate {
-    @apply border-indigo-600 bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-600;
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M4 8h8'/%3e%3c/svg%3e");
+    border-color: var(--violet);
+    background-color: var(--violet);
+  }
+  input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='%23FFFFFF' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
+  }
+  input[type="checkbox"]:indeterminate {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='none' stroke='%23FFFFFF' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M4 8h8'/%3e%3c/svg%3e");
+  }
+  :root[data-theme="dark"] input[type="checkbox"]:checked,
+  :root[data-theme="dark"] input[type="checkbox"]:indeterminate {
+    border-color: var(--violet);
+    background-color: var(--violet);
+  }
+  :root[data-theme="dark"] input[type="checkbox"]:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='%23100C24' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3e%3c/svg%3e");
+  }
+  :root[data-theme="dark"] input[type="checkbox"]:indeterminate {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='none' stroke='%23100C24' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M4 8h8'/%3e%3c/svg%3e");
   }
 
-  /*
-   * Flatpickr theme: keep the widget looking like the other components —
-   * rounded, stone surfaces, teal accent — in both light and dark modes.
-   * Loaded after vendor/flatpickr.min.css so these rules win the ties.
-   */
-  .flatpickr-calendar {
-    @apply rounded-xl border border-stone-200 bg-white font-sans py-1.5
-           shadow-xl dark:border-stone-700 dark:bg-stone-900;
-  }
-  .flatpickr-calendar::before,
-  .flatpickr-calendar::after {
-    border-top-color: var(--color-stone-200) !important;
-    border-bottom-color: var(--color-stone-200) !important;
-  }
-  .flatpickr-months {
-    @apply flex items-center;
-  }
-  .flatpickr-month {
-    @apply text-stone-800 dark:text-stone-100;
-  }
-  .flatpickr-current-month .cur-month,
-  .flatpickr-current-month .flatpickr-monthDropdown-months {
-    @apply font-semibold text-stone-800 dark:text-stone-100;
-  }
-  .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
-    @apply bg-white text-stone-700 dark:bg-stone-900 dark:text-stone-200;
-  }
-  .flatpickr-weekdays,
-  .flatpickr-weekday {
-    @apply text-stone-400 dark:text-stone-500;
-  }
-  .flatpickr-day {
-    @apply rounded-lg text-stone-700 dark:text-stone-300 dark:font-medium;
-  }
-  .flatpickr-day:hover {
-    @apply border-transparent bg-stone-100 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-800;
-  }
-  .flatpickr-day.today {
-    @apply border-stone-400 dark:border-stone-500;
-  }
-  .flatpickr-day.today:hover {
-    @apply bg-stone-100 dark:bg-stone-800;
-  }
-  .flatpickr-day.today.selected {
-    @apply border-indigo-600 bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-600;
-  }
-  .flatpickr-day.selected,
-  .flatpickr-day.selected:hover {
-    @apply border-indigo-600 bg-indigo-600 font-semibold text-white dark:border-indigo-500 dark:bg-indigo-600;
-  }
-  .flatpickr-day.flatpickr-disabled,
-  .flatpickr-day.prevMonthDay,
-  .flatpickr-day.nextMonthDay {
-    @apply text-stone-300 dark:text-stone-700;
-  }
-  .flatpickr-months .flatpickr-prev-month svg,
-  .flatpickr-months .flatpickr-next-month svg {
-    @apply fill-stone-400 dark:fill-stone-500;
-  }
-  .flatpickr-months .flatpickr-prev-month:hover svg,
-  .flatpickr-months .flatpickr-next-month:hover svg {
-    @apply fill-stone-700 dark:fill-stone-200;
-  }
-  .flatpickr-time {
-    @apply border-t border-stone-200 dark:border-stone-700;
-  }
-  .flatpickr-time input,
-  .flatpickr-time .flatpickr-time-separator,
-  .flatpickr-time .flatpickr-am-pm {
-    @apply text-stone-800 dark:text-stone-200;
-  }
-  .flatpickr-time input:hover,
-  .flatpickr-time .flatpickr-am-pm:hover,
-  .flatpickr-time input:focus,
-  .flatpickr-time .flatpickr-am-pm:focus {
-    @apply bg-stone-100 dark:bg-stone-800;
+  input[type="range"] { accent-color: var(--violet); }
+}
+
+/*
+ * Flatpickr theme on the same tokens: surface calendar, hairlines,
+ * violet selection. Deliberately UNLAYERED and placed after flatpickr's
+ * own stylesheet in the cascade — flatpickr.min.css is unlayered, so any
+ * layered override would lose the specificity tie. Tokens flip on their
+ * own in dark mode, so one block covers both themes.
+ */
+.flatpickr-calendar {
+  border-radius: var(--radius-md);
+  border: var(--border-hair) solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  padding: var(--space-2);
+}
+.flatpickr-calendar::before,
+.flatpickr-calendar::after { border-top-color: var(--line) !important; border-bottom-color: var(--line) !important; }
+.flatpickr-calendar.anim,
+.flatpickr-day,
+.flatpickr-current-month .cur_month,
+.flatpickr-current-month .flatpickr-monthDropdown-months { transition: none; }
+.flatpickr-months { display: flex; align-items: center; }
+.flatpickr-current-month .cur-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months { font-weight: 600; color: var(--ink); }
+.flatpickr-monthDropdown-months .flatpickr-monthDropdown-month { background: var(--surface); color: var(--ink); }
+.flatpickr-monthDropdown-months .flatpickr-monthDropdown-month:hover { background: var(--mist); }
+.flatpickr-weekdays .flatpickr-weekday,
+.flatpickr-months .flatpickr-prev-month svg, .flatpickr-months .flatpickr-next-month svg,
+.flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { color: var(--ink-soft); fill: var(--ink-soft); }
+.flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { color: var(--ink); fill: var(--ink); }
+.flatpickr-day { border-radius: var(--radius-sm); color: var(--ink); font-weight: 400; }
+.flatpickr-day:hover { background: var(--mist); border-color: transparent; }
+.flatpickr-day.today { border-color: var(--line-strong); }
+.flatpickr-day.today:hover { background: var(--mist); }
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover { border-color: var(--violet); background: var(--violet); color: var(--on-violet); font-weight: 600; }
+.flatpickr-day.flatpickr-disabled, .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: var(--ink-faint); }
+/* The widget's own time inputs shouldn't inherit the bare-input 48px rule. */
+.flatpickr-calendar input { height: auto; border: 0; background: transparent; color: var(--ink); min-height: 0; padding: 4px; box-shadow: none; }
+.flatpickr-calendar input:hover, .flatpickr-calendar input:focus { border: 0; box-shadow: none; background: var(--mist); }
+.flatpickr-time { border-top: var(--border-hair) solid var(--line); }
+
+@layer components {
+  /* Retie components. Every value comes from the tokens; nothing here re-declares one. */
+
+  /* Button: a pill, like a ring laid flat. Primary is ink. */
+  .rt-btn { --rt-h: 44px; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); height: var(--rt-h); padding: 0 var(--space-5); border-radius: var(--radius-full); border: var(--border-control) solid transparent; font: inherit; font-size: 15px; line-height: 20px; font-weight: 600; letter-spacing: -0.005em; cursor: pointer; white-space: nowrap; text-decoration: none; transition: background-color .15s ease, border-color .15s ease, transform .15s ease; }
+  .rt-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  .rt-btn:active:not(:disabled) { transform: translateY(1px); }
+  .rt-btn:disabled { cursor: not-allowed; opacity: .45; }
+  .rt-btn-sm { --rt-h: 34px; padding: 0 var(--space-4); font-size: 14px; }
+  .rt-btn-lg { --rt-h: 52px; padding: 0 var(--space-6); font-size: 17px; }
+  .rt-btn-block { display: flex; width: 100%; }
+  .rt-btn-icon { display: inline-flex; margin-left: -4px; }
+  .rt-btn-primary { background: var(--action); color: var(--on-action); }
+  .rt-btn-primary:hover:not(:disabled) { background: var(--violet-ink); }
+  .rt-btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line-strong); }
+  .rt-btn-secondary:hover:not(:disabled) { border-color: var(--ink); }
+  .rt-btn-quiet { background: transparent; color: var(--violet-ink); padding: 0 var(--space-3); }
+  .rt-btn-quiet:hover:not(:disabled) { background: var(--violet-soft); }
+  .rt-btn-danger { background: var(--danger); color: var(--on-danger); }
+
+  /* TextField */
+  .rt-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+  .rt-field-label { display: flex; justify-content: space-between; gap: var(--space-2); font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ink); }
+  .rt-field-opt { font-weight: 400; color: var(--ink-soft); }
+  .rt-input { box-sizing: border-box; width: 100%; height: 48px; padding: 0 var(--space-4); border-radius: var(--radius-md); border: var(--border-control) solid var(--line-strong); background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; transition: border-color .15s ease; }
+  .rt-input::placeholder { color: var(--ink-faint); }
+  .rt-input:hover { border-color: var(--ink-soft); }
+  .rt-input:focus-visible { outline: 2px solid transparent; border-color: var(--violet); box-shadow: var(--focus-ring); }
+  textarea.rt-input { height: auto; min-height: 96px; padding: var(--space-3) var(--space-4); }
+  select.rt-input { appearance: none; padding-right: var(--space-8); background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23575079' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right var(--space-4) center; background-size: 18px 18px; }
+  .rt-field.is-invalid .rt-input { border-color: var(--danger); }
+  .rt-field-hint, .rt-field-error { margin: 0; display: block; font-size: 13px; line-height: 18px; color: var(--ink-soft); }
+  /* Django password validators arrive as a helptext <ul>; keep it on the hint scale. */
+  .rt-field-hint ul { margin: var(--space-1) 0 0; padding: 0; list-style: none; }
+  .rt-field-error { color: var(--danger); font-weight: 500; }
+  .is-invalid .rt-field-hint { display: none; }
+
+  /* Switch: when on, the thumb becomes a ring. */
+  .rt-switch { display: inline-flex; align-items: flex-start; gap: var(--space-3); cursor: pointer; position: relative; }
+  .rt-switch.is-disabled { cursor: not-allowed; opacity: .5; }
+  .rt-switch-input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .rt-switch-track { flex: none; box-sizing: border-box; position: relative; width: 48px; height: 28px; border-radius: var(--radius-full); background: var(--mist); border: var(--border-control) solid var(--line-strong); transition: background-color .2s ease, border-color .2s ease; }
+  .rt-switch-thumb { position: absolute; top: 3px; left: 3px; box-sizing: border-box; width: 19px; height: 19px; border-radius: var(--radius-full); background: var(--surface); border: var(--border-control) solid var(--line-strong); box-shadow: var(--shadow-sm); transition: transform .2s cubic-bezier(.3,.7,.2,1), background-color .2s ease, border-color .2s ease, border-width .2s ease; }
+  .rt-switch-input:checked + .rt-switch-track { background: var(--violet); border-color: var(--violet); }
+  .rt-switch-input:checked + .rt-switch-track .rt-switch-thumb { transform: translateX(20px); background: transparent; border: 5px solid var(--on-violet); box-shadow: none; }
+  .rt-switch-input:focus-visible + .rt-switch-track { box-shadow: var(--focus-ring); }
+  .rt-switch-text { display: flex; flex-direction: column; padding-top: 2px; }
+  .rt-switch-label { font-size: 15px; line-height: 22px; font-weight: 600; color: var(--ink); }
+  .rt-switch-desc { font-size: 14px; line-height: 20px; color: var(--ink-soft); }
+
+  /* Tabs: a segmented track on mist. */
+  .rt-tabs { display: inline-flex; gap: 2px; padding: 4px; border-radius: var(--radius-full); background: var(--mist); max-width: 100%; overflow-x: auto; }
+  .rt-tabs-block { display: flex; }
+  .rt-tabs-block .rt-tab { flex: 1; }
+  .rt-tab { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); height: 36px; padding: 0 var(--space-4); border: 0; border-radius: var(--radius-full); background: transparent; color: var(--ink-soft); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; transition: background-color .15s ease, color .15s ease; }
+  .rt-tab:hover { color: var(--ink); }
+  .rt-tab.is-selected { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+  .rt-tab:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  .rt-tab-count { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+  .rt-tab.is-selected .rt-tab-count { color: var(--violet-ink); }
+
+  /* Tag */
+  .rt-tag { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: var(--radius-full); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; background: var(--mist); color: var(--ink-soft); }
+  .rt-tag-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: currentColor; }
+  .rt-tag-violet { background: var(--violet-soft); color: var(--violet-ink); }
+  .rt-tag-coral { background: var(--coral-soft); color: var(--coral-ink); }
+  .rt-tag-apricot { background: var(--apricot-soft); color: var(--ink); }
+  .rt-tag-apricot .rt-tag-dot { background: var(--apricot); }
+  .rt-tag-success { background: var(--success-soft); color: var(--success); }
+  .rt-tag-warning { background: var(--warning-soft); color: var(--warning); }
+  .rt-tag-danger { background: var(--danger-soft); color: var(--danger); }
+  .rt-tag-solid { background: var(--coral); color: var(--on-accent); }
+
+  /* Avatar */
+  .rt-avatar { flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full); overflow: hidden; font-weight: 700; letter-spacing: -0.02em; line-height: 1; user-select: none; }
+  .rt-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rt-avatar-violet { background: var(--violet-soft); color: var(--violet-ink); }
+  .rt-avatar-coral { background: var(--coral-soft); color: var(--coral-ink); }
+  .rt-avatar-apricot { background: var(--apricot); color: var(--on-accent); }
+  .rt-avatar-mist { background: var(--mist); color: var(--ink-soft); }
+  .rt-avatar.has-ring { box-shadow: 0 0 0 var(--border-ring) var(--paper), 0 0 0 calc(var(--border-ring) * 2) var(--violet); }
+  .rt-pair { display: inline-flex; align-items: center; }
+  .rt-pair .rt-pair-b { box-shadow: 0 0 0 var(--border-ring) var(--rt-pair-gap, var(--paper)); position: relative; margin-left: -8px; }
+
+  /* Card */
+  .rt-card { --rt-pair-gap: var(--surface); box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-6); border-radius: var(--radius-lg); background: var(--surface); border: var(--border-hair) solid var(--line); min-width: 0; }
+  .rt-card.is-raised { border-color: transparent; box-shadow: var(--shadow-md); }
+  .rt-card-mist { --rt-pair-gap: var(--mist); background: var(--mist); border-color: transparent; }
+  .rt-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+  .rt-card-titles { min-width: 0; }
+  .rt-card-title { margin: 0; font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: -0.015em; color: var(--ink); text-wrap: balance; }
+  .rt-card-meta { margin: 2px 0 0; font-family: var(--font-mono); font-size: 13px; line-height: 20px; color: var(--ink-soft); }
+  .rt-card-actions { display: flex; gap: var(--space-2); flex: none; }
+
+  /* ListRow */
+  .rt-row { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-3); width: 100%; padding: var(--space-3) var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: none; }
+  .rt-row + .rt-row { box-shadow: 0 calc(var(--border-hair) * -1) 0 var(--line); }
+  .rt-row.is-interactive { cursor: pointer; }
+  .rt-row.is-interactive:hover { background: var(--mist); }
+  .rt-row:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  .rt-row-lead, .rt-row-trail { flex: none; display: inline-flex; }
+  .rt-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .rt-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+  .rt-row-title { font-size: 16px; line-height: 22px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rt-row-meta { flex: none; font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .rt-row-desc { font-size: 14px; line-height: 20px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rt-row.is-unread .rt-row-title { font-weight: 700; }
+  .rt-row-dot { flex: none; width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--coral); }
+
+  /* Notice: a tinted field with an icon. No side stripe. */
+  .rt-notice { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); border-radius: var(--radius-md); color: var(--ink); }
+  .rt-notice-info { background: var(--violet-soft); }
+  .rt-notice-info .rt-notice-icon { color: var(--violet-ink); }
+  .rt-notice-success { background: var(--success-soft); }
+  .rt-notice-success .rt-notice-icon { color: var(--success); }
+  .rt-notice-warning { background: var(--warning-soft); }
+  .rt-notice-warning .rt-notice-icon { color: var(--warning); }
+  .rt-notice-danger { background: var(--danger-soft); }
+  .rt-notice-danger .rt-notice-icon { color: var(--danger); }
+  .rt-notice-icon { flex: none; padding-top: 2px; }
+  .rt-notice-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rt-notice-title { margin: 0; font-size: 15px; line-height: 22px; font-weight: 700; }
+  .rt-notice-text { font-size: 14px; line-height: 20px; color: var(--ink-soft); }
+  .rt-notice-text p { margin: 0; }
+  .rt-notice-action { margin-top: var(--space-2); }
+  .rt-notice-close { flex: none; display: inline-flex; padding: 4px; margin: -4px -4px 0 0; border: 0; border-radius: var(--radius-full); background: transparent; color: var(--ink-soft); cursor: pointer; }
+  .rt-notice-close:hover { color: var(--ink); }
+  .rt-notice-close:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+
+  /* Toast: an ink pill anchored to the bottom of the screen. */
+  .ds-toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--action); color: var(--on-action); padding: 10px 18px; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; box-shadow: var(--shadow-md); z-index: 50; }
+
+  /* App-shell navigation links: pill links like the design system's ds-nav. */
+  .rt-nav { display: flex; min-width: 0; }
+  .rt-nav-link { display: flex; align-items: center; gap: var(--space-2); padding: 8px 12px; border-radius: var(--radius-full); color: var(--ink-soft); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 600; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
+  .rt-nav-link:hover { color: var(--ink); background: var(--mist); }
+  .rt-nav-link:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+  .rt-nav-link.is-active { background: var(--violet-soft); color: var(--violet-ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rt-btn, .rt-switch-track, .rt-switch-thumb, .rt-tab, .rt-input,
+    .rt-nav-link, .rt-row { transition: none; }
   }
 }

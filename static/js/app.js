@@ -38,17 +38,30 @@
   // ---- Icons & charts --------------------------------------------------
 
   function refreshIcons(root) {
-    if (window.lucide) window.lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.75 } });
   }
 
+  // Read the design tokens out of computed styles so the charts follow the
+  // active theme (light or dark) without duplicating hex values here.
   function themeColors() {
-    var doc = document.documentElement;
+    var style = getComputedStyle(document.documentElement);
+    function token(name, fallback) {
+      var value = style.getPropertyValue(name).trim();
+      return value || fallback;
+    }
     return {
-      grid: doc.classList.contains("dark") ? "#0e353c" : "#c3d6da",
-      labels: doc.classList.contains("dark") ? "#7b989e" : "#49656d",
-      accent: "#0ad1c8",
-      accentFill: "rgba(10, 209, 200, 0.16)",
+      grid: token("--line", "#E3DCF2"),
+      labels: token("--ink-soft", "#575079"),
+      accent: token("--violet", "#6C4DFF"),
+      accentFill: toRgba(token("--violet", "#6C4DFF"), 0.16),
     };
+  }
+
+  function toRgba(hex, alpha) {
+    var match = /^#?([0-9a-f]{6})$/i.exec(hex);
+    if (!match) return hex;
+    var n = parseInt(match[1], 16);
+    return "rgba(" + (n >> 16) + ", " + ((n >> 8) & 255) + ", " + (n & 255) + ", " + alpha + ")";
   }
 
   function drawSeriesChart(canvas, data) {
@@ -101,27 +114,54 @@
   }
 
   // ---- Theme -----------------------------------------------------------
+  //
+  // system | light | dark, cycled by the sidebar button and chosen exactly
+  // on the profile page, stored under "retie-theme" like the design system.
+  // The system preference resolves to an explicit data-theme attribute so
+  // token styles and Tailwind's dark: variant always agree.
 
-  var THEME_KEY = "theme";
+  var THEME_KEY = "retie-theme";
 
   function applyTheme(pref) {
     var dark =
       pref === "dark" ||
       (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("dark", dark);
+    if (pref === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      // Light (both chosen and resolved system light) is applied explicitly.
+      document.documentElement.setAttribute("data-theme", "light");
+    }
     qsa("[data-theme-choice]").forEach(function (btn) {
       btn.dataset.active = btn.dataset.themeChoice === pref ? "true" : "false";
     });
+    syncThemeControls(pref);
     try {
       localStorage.setItem(THEME_KEY, pref);
+      localStorage.removeItem("theme"); // pre-rename key; migrate once
     } catch (e) {
       /* private mode: theme won't persist */
     }
   }
 
+  function syncThemeControls(pref) {
+    var label = pref.charAt(0).toUpperCase() + pref.slice(1);
+    qsa("[data-theme-toggle]").forEach(function (btn) {
+      var text = btn.querySelector("[data-theme-label]");
+      if (text) text.textContent = label;
+      btn.setAttribute("aria-label", "Theme: " + label);
+    });
+    qsa("[data-theme-choice]").forEach(function (btn) {
+      var on = btn.dataset.themeChoice === pref;
+      btn.dataset.active = on ? "true" : "false";
+      // Profile page choices are styled as design-system tabs.
+      btn.classList.toggle("is-selected", on);
+    });
+  }
+
   function currentTheme() {
     try {
-      return localStorage.getItem(THEME_KEY) || "system";
+      return localStorage.getItem(THEME_KEY) || localStorage.getItem("theme") || "system";
     } catch (e) {
       return "system";
     }
@@ -139,14 +179,12 @@
       return;
     }
 
-    // Quick toggle in the sidebar.
+    // Quick cycler in the sidebar: system -> light -> dark.
     var toggle = target.closest("[data-theme-toggle]");
     if (toggle) {
-      var current = currentTheme();
-      var isDark =
-        current === "dark" ||
-        (current === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-      applyTheme(isDark ? "light" : "dark");
+      var modes = ["system", "light", "dark"];
+      var next = modes[(modes.indexOf(currentTheme()) + 1) % modes.length];
+      applyTheme(next);
       return;
     }
 
@@ -311,8 +349,8 @@
         bar.style.height = (n > 0 ? Math.max(3, Math.round((n / max) * 14)) : 2) + "px";
         bar.style.width = "3px";
         bar.className = n > 0
-          ? "inline-block rounded-sm bg-indigo-500/60"
-          : "inline-block rounded-sm bg-stone-200 dark:bg-stone-700";
+          ? "inline-block rounded-sm bg-violet/60"
+          : "inline-block rounded-sm bg-line";
         holder.appendChild(bar);
       });
     });
