@@ -1,9 +1,10 @@
 """Analytics pages. Click logging itself happens in links.views.redirect_view."""
 
+import csv
 import json
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -86,3 +87,35 @@ def _render_stats(request, link):
         "devices": queries.device_breakdown(None, link=link),
     }
     return render(request, "analytics/public.html", context)
+
+
+@login_required
+def link_analytics_csv(request, code):
+    """Download one link's aggregate analytics as CSV (non-bot counts).
+
+    Long-form rows: kind meta/daily/referrer/device/country, label, value.
+    Owner-only; trashed links export nothing.
+    """
+    link = get_object_or_404(Link, code=code, user=request.user, deleted_at__isnull=True)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="analytics-{link.code}.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["kind", "label", "value"])
+    writer.writerow(["meta", "code", link.code])
+    writer.writerow(["meta", "destination", link.destination])
+    if link.title:
+        writer.writerow(["meta", "title", link.title])
+
+    series = queries.clicks_over_time(request.user, days=30, link=link)
+    for point in series:
+        writer.writerow(["daily", point["date"], point["clicks"]])
+
+    for row in queries.referrer_breakdown(request.user, link=link, limit=20):
+        writer.writerow(["referrer", row["referrer"], row["count"]])
+    for device, count in queries.device_breakdown(request.user, link=link).items():
+        writer.writerow(["device", device, count])
+    for row in queries.country_breakdown(request.user, link=link, limit=20):
+        writer.writerow(["country", row["country"], row["count"]])
+    writer.writerow(["meta", "total_clicks_non_bot", link.clicks.filter(is_bot=False).count()])
+    return response

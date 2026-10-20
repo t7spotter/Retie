@@ -30,6 +30,11 @@
           {% if bots %}Bots shown{% else %}Include bots{% endif %}
           {% if bot_clicks %}<span class="rounded-full bg-stone-100 px-1.5 text-xs dark:bg-stone-800">{{ bot_clicks }}</span>{% endif %}
         </a>
+        <a href="{% url 'link_analytics_csv' link.code %}"
+           class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+           title="Download this link's analytics as CSV">
+          <i data-lucide="download" class="h-4 w-4"></i> CSV
+        </a>
         <button type="button" data-copy="{{ SITE_URL }}/{{ link.code }}"
                 class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
           <i data-lucide="copy" class="h-4 w-4"></i> Copy

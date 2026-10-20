@@ -17,6 +17,7 @@ urlpatterns = [
     path("dashboard/links/<str:code>/restore/", views.link_restore, name="link_restore"),
     path("dashboard/links/<str:code>/purge/", views.link_purge, name="link_purge"),
     path("dashboard/links/<str:code>/analytics/", analytics_views.link_analytics, name="link_analytics"),
+    path("dashboard/links/<str:code>/analytics.csv", analytics_views.link_analytics_csv, name="link_analytics_csv"),
     path("stats/<str:code>", analytics_views.public_stats, name="public_stats"),
     # QR for a short code. Must stay above the catch-all redirect route.
     re_path(r"^(?P<code>[a-z0-9][a-z0-9-]{1,30})\.qr\.svg$", views.link_qr, name="link_qr"),

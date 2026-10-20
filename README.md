@@ -20,6 +20,9 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Per-link stats export**: one-click CSV download of a link's 30-day
+  daily counts plus referrer/device/country breakdowns from the
+  analytics page.
 - **Row sparklines**: each dashboard row carries a 14-day micro bar chart
   of non-bot clicks so quiet links stand out (pure JS rendering from one
   aggregate query — no extra chart library).
