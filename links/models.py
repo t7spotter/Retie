@@ -57,6 +57,35 @@ class Tag(models.Model):
         return self.name
 
 
+def normalize_referrer_domains(raw: str) -> list:
+    """Parse a comma/semicolon separated referrer allow-list string.
+
+    Returns lowercase, scheme-stripped domain tokens (e.g.
+    "news.example.com"). Hostnames only — no paths, no schemes; anything
+    else raises ValidationError. At most 20 entries.
+    """
+    import re
+
+    domains = []
+    for part in (raw or "").replace(";", ",").split(","):
+        token = part.strip().lower()
+        if not token:
+            continue
+        # Strip a scheme and any path if someone pastes a full URL.
+        if "://" in token:
+            token = token.split("://", 1)[1]
+        token = token.split("/", 1)[0]
+        if not re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", token):
+            raise ValidationError(
+                f"Referrer domain {token!r} is not a valid public hostname."
+            )
+        if token not in domains:
+            domains.append(token)
+    if len(domains) > 20:
+        raise ValidationError("At most 20 referrer domains per link.")
+    return domains
+
+
 def normalize_tag_names(raw: str) -> list:
     """Parse a comma/semicolon separated tags string user-typed.
 
@@ -126,6 +155,11 @@ class Link(models.Model):
         default=False,
         help_text="Hide the country breakdown on the public stats page.",
     )
+    # Hotlink protection: when non-empty, redirects are served only when
+    # the visitor's referrer host matches one of these domains (subdomains
+    # included). Direct traffic (no referrer header) is always allowed —
+    # typed URLs and QR codes never carry a referrer.
+    allowed_referrers = models.TextField(blank=True, default="")
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -28,8 +28,13 @@ class LinkForm(forms.ModelForm):
     # values (an edit without touching these) changes nothing — previously
     # stored UTM parameters are never stripped.
     utm_source = forms.CharField(required=False, strip=True, max_length=120)
+    utm_source = forms.CharField(required=False, strip=True, max_length=120)
     utm_medium = forms.CharField(required=False, strip=True, max_length=120)
     utm_campaign = forms.CharField(required=False, strip=True, max_length=120)
+    # Hotlink protection allow-list: comma/semicolon separated domains.
+    # Normalized (lowercased, stripped of schemes/paths) and stored
+    # newline-separated. Empty means "allow from anywhere".
+    allowed_referrers = forms.CharField(required=False, strip=True)
     # Set by the "create anyway" button after a duplicate-destination
     # warning; never rendered on the initial form.
     confirm_duplicate = forms.BooleanField(required=False)
@@ -133,6 +138,13 @@ class LinkForm(forms.ModelForm):
             cleaned["destination"] = urlunsplit(
                 split._replace(query=urlencode(merged, doseq=True))
             )
+        # Referrer allow-list: normalize now so a bad entry becomes a field
+        # error instead of an exception at save time.
+        from .models import normalize_referrer_domains
+
+        cleaned["allowed_referrers"] = "\n".join(
+            normalize_referrer_domains(cleaned.get("allowed_referrers") or "")
+        )
         return cleaned
 
     def _save_instance(self, link: Link, commit: bool) -> Link:
@@ -145,6 +157,9 @@ class LinkForm(forms.ModelForm):
             link.password_hash = make_password(password)
         elif self.cleaned_data.get("remove_password"):
             link.password_hash = ""
+        # Normalize the referrer allow-list (may raise ValidationError with a
+        # clean message).
+        link.allowed_referrers = self.cleaned_data.get("allowed_referrers") or ""
         with transaction.atomic():
             link.save()
             for name in self.tag_names:

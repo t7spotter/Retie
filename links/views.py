@@ -646,6 +646,25 @@ def redirect_view(request, code):
     if link.expires_at and link.expires_at <= timezone.now():
         raise Http404()
 
+    # Referrer allow-list (hotlink protection). Empty always passes; a
+    # missing referrer always passes (typed URLs, QR codes); anything else
+    # must match one of the listed hosts (subdomains included).
+    if link.allowed_referrers:
+        from urllib.parse import urlsplit
+
+        allowed = [d for d in link.allowed_referrers.split("\n") if d]
+        referer_host = ""
+        referer = request.META.get("HTTP_REFERER", "")
+        if referer:
+            referer_host = (urlsplit(referer).hostname or "").lower()
+        if referer_host:
+            host_ok = any(
+                referer_host == domain or referer_host.endswith("." + domain)
+                for domain in allowed
+            )
+            if not host_ok:
+                raise PermissionDenied("This short link only works from its approved sites.")
+
     # Password gate: locked links render an unlock form instead of
     # redirecting (and never count a click for the unlock page view).
     if link.password_hash and str(link.pk) not in request.session.get(

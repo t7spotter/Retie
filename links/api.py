@@ -67,6 +67,7 @@ class LinkViewSet(viewsets.ModelViewSet):
         custom_alias = bool(data.get("code"))
         password = data.pop("password", "") or ""
         remove_password = data.pop("remove_password", False)
+        allowed_referrers = data.pop("allowed_referrers", None)
         remaining = 5
         while True:
             payload = dict(data)
@@ -74,6 +75,8 @@ class LinkViewSet(viewsets.ModelViewSet):
             try:
                 link = Link.objects.create(user=request.user, **payload)
                 LinkSerializer._apply_password(link, password, remove_password)
+                if allowed_referrers is not None:
+                    LinkSerializer._apply_referrers(link, allowed_referrers)
             except IntegrityError:
                 if custom_alias:
                     return Response(

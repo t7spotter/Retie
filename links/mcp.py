@@ -97,6 +97,13 @@ def tool_create_link(user, args: dict) -> dict:
             "public_hide_countries": bool(cleaned.get("public_hide_countries", False)),
             "notes": cleaned.get("notes", ""),
         }
+        raw_referrers = args.get("allowed_referrers")
+        if raw_referrers:
+            from .models import normalize_referrer_domains
+
+            payload["allowed_referrers"] = "\n".join(
+                normalize_referrer_domains(", ".join(raw_referrers) if isinstance(raw_referrers, list) else raw_referrers)
+            )
         if cleaned.get("password"):
             from django.contrib.auth.hashers import make_password
 
@@ -125,6 +132,7 @@ def tool_create_link(user, args: dict) -> dict:
         "permanent": link.permanent,
         "public_stats": link.public_stats,
         "public_hide_countries": link.public_hide_countries,
+        "allowed_referrers": [d for d in link.allowed_referrers.split("\n") if d],
         "notes": link.notes,
     }
 
@@ -178,6 +186,7 @@ def tool_get_link(user, args: dict) -> dict:
         "permanent": link.permanent,
         "public_stats": link.public_stats,
         "public_hide_countries": link.public_hide_countries,
+        "allowed_referrers": [d for d in link.allowed_referrers.split("\n") if d],
         "notes": link.notes,
         "total_clicks": link.clicks.count(),
     }
@@ -213,6 +222,13 @@ def tool_update_link(user, args: dict) -> dict:
     if "public_hide_countries" in args:
         link.public_hide_countries = bool(args["public_hide_countries"])
         updates.append("public_hide_countries")
+    raw_referrers = args.get("allowed_referrers")
+    if raw_referrers is not None:
+        from .models import normalize_referrer_domains
+
+        domains = normalize_referrer_domains(", ".join(raw_referrers) if isinstance(raw_referrers, list) else raw_referrers)
+        link.allowed_referrers = "\n".join(domains)
+        updates.append("allowed_referrers")
     if "notes" in args:
         link.notes = str(args["notes"] or "")[:2000]
         updates.append("notes")
@@ -346,6 +362,7 @@ TOOLS = [
                 "is_active": {"type": "boolean", "description": "Start/stop redirecting."},
                 "public_stats": {"type": "boolean", "description": "Publish/unpublish the public stats page."},
                 "public_hide_countries": {"type": "boolean", "description": "Hide countries on the public stats page."},
+                "allowed_referrers": {"type": "array", "items": {"type": "string"}, "description": "Replace the referrer allow-list; empty array clears it."},
                 "permanent": {"type": "boolean", "description": "301 (true) instead of 302."},
                 "password": {"type": "string", "description": "Set or replace the link password."},
                 "remove_password": {"type": "boolean", "description": "Remove the link password."},

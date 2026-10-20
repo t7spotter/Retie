@@ -20,6 +20,10 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Per-link referrer allow-list**: restrict a link to visitors coming
+  from approved domains (subdomains included). Direct traffic and QR
+  scans always work; blocked referrers get a 403 and no click is
+  recorded. Settable on the edit page, via the API, and via MCP.
 - **Per-link stats export**: one-click CSV download of a link's 30-day
   daily counts plus referrer/device/country breakdowns from the
   analytics page.

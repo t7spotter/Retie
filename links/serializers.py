@@ -1,6 +1,23 @@
 from rest_framework import serializers
 
-from .models import Link
+from .models import Link, normalize_referrer_domains
+
+
+class ReferrerListField(serializers.Field):
+    """Accepts a comma/semicolon string OR a list of hostnames on write,
+    returns a clean list on read. Normalizing happens at read/write edges."""
+
+    def to_internal_value(self, data):
+        if isinstance(data, (list, tuple)):
+            data = ", ".join(str(item) for item in data)
+        try:
+            normalize_referrer_domains(str(data))
+        except Exception as exc:
+            raise serializers.ValidationError(str(getattr(exc, "messages", [exc])[0]))
+        return str(data)
+
+    def to_representation(self, value):
+        return [d for d in (value or "").split("\n") if d]
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -15,6 +32,9 @@ class LinkSerializer(serializers.ModelSerializer):
         write_only=True, required=False, allow_blank=True, trim_whitespace=True
     )
     remove_password = serializers.BooleanField(write_only=True, required=False)
+    # Referrer allow-list: write with a comma/semicolon string or a list;
+    # always reads back as a clean list.
+    allowed_referrers = ReferrerListField(required=False, allow_null=True)
 
     class Meta:
         model = Link
@@ -32,6 +52,7 @@ class LinkSerializer(serializers.ModelSerializer):
             "public_stats",
             "public_hide_countries",
             "notes",
+            "allowed_referrers",
             "password",
             "remove_password",
             "created_at",
@@ -50,15 +71,19 @@ class LinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop("password", "") or ""
         remove = validated_data.pop("remove_password", False)
+        allowed = validated_data.pop("allowed_referrers", None)
         link = super().create(validated_data)
         self._apply_password(link, password, remove)
+        self._apply_referrers(link, allowed)
         return link
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", "") or ""
         remove = validated_data.pop("remove_password", False)
+        allowed = validated_data.pop("allowed_referrers", None)
         link = super().update(instance, validated_data)
         self._apply_password(link, password, remove)
+        self._apply_referrers(link, allowed)
         return link
 
     @staticmethod
@@ -72,6 +97,15 @@ class LinkSerializer(serializers.ModelSerializer):
         else:
             return
         link.save(update_fields=["password_hash", "updated_at"])
+
+    @staticmethod
+    def _apply_referrers(link: Link, raw: str | None) -> None:
+        from .models import normalize_referrer_domains
+
+        if raw is None:
+            return
+        link.allowed_referrers = "\n".join(normalize_referrer_domains(raw or ""))
+        link.save(update_fields=["allowed_referrers", "updated_at"])
 
     def get_short_url(self, obj: Link) -> str:
         request = self.context.get("request")
