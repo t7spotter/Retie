@@ -80,6 +80,10 @@ deployment, and no unnecessary infrastructure.
 - **Session kill switch**: the profile page lists all browsers signed into
   the account with a "sign out everywhere else" button (useful after a
   password or 2FA change).
+- **Google sign-in (opt-in via env)**: with a client ID/secret configured,
+  login and register pages gain a "Continue with Google" button — one step
+  that signs in an existing account by its Google-verified email or
+  provisions a new one (when registration is open). TOTP 2FA still applies.
 - **Public stats pages**: opt-in per link at `/stats/<code>` — aggregate
   totals, 30-day chart, devices, and top countries, with no login and no
   click-level detail. A per-link "hide countries" option drops the
@@ -107,6 +111,7 @@ deployment, and no unnecessary infrastructure.
 | Agents     | MCP server at `/mcp/` (Streamable HTTP, API-key auth) + docs MCP at `/api/docs/mcp` |
 | Serving    | Gunicorn + WhiteNoise (static), Docker Compose      |
 | Tests      | pytest + pytest-django                              |
+| Auth       | Django auth + TOTP (pyotp); optional Google sign-in (Authlib, OIDC) |
 
 ## Project layout
 
@@ -379,6 +384,7 @@ unpkg.com/lucide.org/), Flatpickr from npmjs.com/package/flatpickr (4.6.13).
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` | SMTP settings for password reset mail |
 | `DEFAULT_FROM_EMAIL` | From address of reset emails |
 | `REGISTRATION_ENABLED` | `false` closes signups (single-operator installs) |
+| `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` | Optional Google sign-in (see "Google sign-in" below); both empty keeps the buttons hidden |
 | `LANDING_ENABLED` | `false` turns `/` into an app-only doorway (dashboard/login, no marketing page) |
 | `APIWARDEN_TOKEN` | Optional shared token gating `/api/docs/` (unset = public docs) |
 | `POSTGRES_DB`, `POSTGRES_PASSWORD` | Passed to the Postgres container; the app derives `DATABASE_URL` from them |
@@ -506,6 +512,33 @@ curl -X POST https://links.example.com/mcp/ \
 
 (A second, docs-only MCP surface lives at `/api/docs/mcp` — it exposes the
 API documentation for agents to read, never your data.)
+
+## Google sign-in (optional)
+
+Set `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` (from a Google
+Cloud OAuth "Web application" client) to add a **Continue with Google**
+button on the login and register pages. Create the client with these
+authorized redirect URIs (replace the host with yours, plus any localhost
+variant you develop on):
+
+```
+https://your-host/accounts/login/google/callback/
+```
+
+Behavior, in the spirit of the rest of this project:
+
+- **Login or registration in one step.** If the Google-verified email matches
+  an existing account, that account is signed in (password or not). A new
+  address gets an account provisioned with an **unusable password** — Google
+  only — and only when `REGISTRATION_ENABLED` is true.
+- **Email-verified binding.** The flow trusts the ID token's claims only after
+  Authlib validates them cryptographically (Google's published JWKS, issuer,
+  this client's `client_id` as audience, and a per-request nonce stored in the
+  server-side session). An unverified Google email is refused.
+- **2FA is still enforced.** Users with TOTP enabled must complete the second
+  factor after the Google step, exactly as with password logins.
+- Both empty values hide the buttons and make the OAuth routes bounce back to
+  the password form with a friendly message.
 
 ## Login two-factor (TOTP)
 

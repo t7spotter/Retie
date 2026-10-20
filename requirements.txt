@@ -16,3 +16,5 @@ maxminddb==2.8.0
 # Development / test (also installed by requirements-dev)
 pytest==8.4.2
 pytest-django==4.11.1
+authlib==1.6.5
+requests==2.34.2

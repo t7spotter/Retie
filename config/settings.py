@@ -299,6 +299,13 @@ SECURE_REFERRER_POLICY = "same-origin"
 # Operators can disable open registration entirely (e.g. single-user installs).
 REGISTRATION_ENABLED = env.bool("REGISTRATION_ENABLED", default=True)
 
+# --- Optional Google sign-in -----------------------------------------------
+# Empty values hide the "Continue with Google" buttons and make the OAuth
+# routes bounce back to the password form. Redirect URI for the Google
+# Cloud console: {SITE_URL}/accounts/login/google/callback/
+GOOGLE_OAUTH_CLIENT_ID = env.str("GOOGLE_OAUTH_CLIENT_ID", default="")
+GOOGLE_OAUTH_CLIENT_SECRET = env.str("GOOGLE_OAUTH_CLIENT_SECRET", default="")
+
 # Default primary key field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

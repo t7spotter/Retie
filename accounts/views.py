@@ -23,6 +23,7 @@ import segno
 from links.views import rate_limited
 
 from .forms import RegisterForm, RetieLoginForm
+from .oauth import google_client, oauth_available, user_from_google_claims
 
 LOGIN_LIMIT = rate_limited("login", limit=25, window_seconds=300)
 REGISTER_LIMIT = rate_limited("register", limit=10, window_seconds=3600)
@@ -44,10 +45,11 @@ def register(request):
             return redirect("dashboard")
     else:
         form = RegisterForm()
-    return render(request, "registration/register.html", {"form": form})
+    return render(request, "registration/register.html", {"form": form, "google_oauth": oauth_available()})
 
 
 SESSION_2FA_KEY = "two_factor_uid"
+SESSION_OAUTH_NEXT = "oauth_next"
 
 
 @LOGIN_LIMIT
@@ -67,7 +69,105 @@ def login_view(request):
             return redirect(request.GET.get("next") or "dashboard")
     else:
         form = RetieLoginForm()
-    return render(request, "registration/login.html", {"form": form})
+    return render(request, "registration/login.html", {"form": form, "google_oauth": oauth_available()})
+
+
+# ---- Google sign-in --------------------------------------------------------
+
+_OAUTH_STATE_PREFIX = "_state_google_"  # authlib's session key for state data
+
+
+def _oauth_error(request, message: str):
+    """Back to the login form with a human explanation."""
+    messages.error(request, message)
+    return redirect("login")
+
+
+def _google_next(request) -> str:
+    """The stashed ?next= target, only if it is a same-site path."""
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    candidate = request.session.pop(SESSION_OAUTH_NEXT, "")
+    if candidate and url_has_allowed_host_and_scheme(candidate, allowed_hosts=None, require_https=request.is_secure()):
+        return candidate
+    return ""
+
+
+@LOGIN_LIMIT
+def google_login(request):
+    """Step 1: bounce the browser to Google's consent screen.
+
+    Authlib generates state + nonce, storing both in the session so the
+    callback can verify nothing was replayed or tampered with.
+    """
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    if not oauth_available():
+        return _oauth_error(request, "Google sign-in isn't available on this installation.")
+    nxt = request.GET.get("next") or ""
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    if nxt and url_has_allowed_host_and_scheme(nxt, allowed_hosts=None, require_https=request.is_secure()):
+        request.session[SESSION_OAUTH_NEXT] = nxt
+    return google_client().authorize_redirect(request, request.build_absolute_uri("/accounts/login/google/callback/"))
+
+
+@LOGIN_LIMIT
+def google_callback(request):
+    """Step 2: exchange the code, verify the ID token, log in or register.
+
+    The ID token is verified by authlib end to end (signature vs Google's
+    JWKS, issuer, our client_id as audience, session-bound nonce). Only
+    then is `token["userinfo"]` trusted — and only with a verified email.
+    """
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    if not oauth_available():
+        return _oauth_error(request, "Google sign-in isn't available on this installation.")
+
+    if request.GET.get("error"):
+        return _oauth_error(request, "Google sign-in was cancelled. You can use the form instead.")
+
+    state = request.GET.get("state") or ""
+    if not state or not request.session.get(_OAUTH_STATE_PREFIX + state):
+        # Forged, replayed, or expired consent redirect — never log anyone
+        # in for it. authlib re-checks this key itself; the pre-check makes
+        # that guarantee explicit and testable.
+        return _oauth_error(request, "That sign-in session expired. Please try again.")
+
+    try:
+        token = google_client().authorize_access_token(request)
+    except Exception:
+        # Network trouble, rejected token, cancelled consent — all get the
+        # same non-committal message (no oracle for the exact failure).
+        return _oauth_error(request, "Google sign-in failed. Please try again or use the form.")
+
+    # Consume the state ourselves as well: authlib clears it during the
+    # exchange, and this makes replay-protection view-visible in tests.
+    request.session.pop(_OAUTH_STATE_PREFIX + state, None)
+
+    userinfo = dict(token["userinfo"]) if token and token.get("userinfo") else {}
+    email = userinfo.get("email") or ""
+    user = user_from_google_claims(userinfo)
+    if user is None:
+        if not email:
+            return _oauth_error(request, "Google didn't share an email address for this account.")
+        if not userinfo.get("email_verified"):
+            return _oauth_error(request, "Your Google account's email isn't verified, so it can't be used to sign in here.")
+        return _oauth_error(request, "No account matches that Google email and sign-up is disabled on this installation.")
+
+    two = getattr(user, "two_factor", None)
+    if two is not None and two.enabled:
+        # Same rule as password logins: identity first, factor second.
+        request.session[SESSION_2FA_KEY] = user.pk
+        return redirect("two_factor")
+
+    # Authentication happened at Google's side; this session just inherits
+    # the prebuilt backend attribute so Django's login machinery is happy.
+    user.backend = "django.contrib.auth.backends.ModelBackend"
+    auth_login(request, user)
+    nxt = _google_next(request)
+    return redirect(nxt or "dashboard")
 
 
 def _pending_2fa_user(request):

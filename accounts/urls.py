@@ -6,6 +6,8 @@ from . import views
 urlpatterns = [
     path("accounts/register/", views.register, name="register"),
     path("accounts/login/", views.login_view, name="login"),
+    path("accounts/login/google/", views.google_login, name="google_login"),
+    path("accounts/login/google/callback/", views.google_callback, name="google_callback"),
     path("accounts/two-factor/", views.two_factor_view, name="two_factor"),
     path("accounts/two-factor/setup/", views.two_factor_setup, name="two_factor_setup"),
     path("accounts/two-factor/qr.svg", views.two_factor_qr, name="two_factor_qr"),
