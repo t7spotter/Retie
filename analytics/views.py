@@ -69,14 +69,14 @@ def public_stats(request, code):
 
 
 def _render_stats(request, link):
-
     series = queries.clicks_over_time(None, days=30, link=link)
     referrers = queries.referrer_breakdown(None, link=link, limit=5)
-    countries = queries.country_breakdown(None, link=link, limit=5)
     max_referrer_count = max((row["count"] for row in referrers), default=0)
 
     context = {
         "link": link,
+        "show_countries": not link.public_hide_countries,
+        "countries": [] if link.public_hide_countries else queries.country_breakdown(None, link=link, limit=5),
         "total_clicks": link.clicks.filter(is_bot=False).count(),
         "total_clicks_30": sum(point["clicks"] for point in series),
         "series": series,
@@ -84,6 +84,5 @@ def _render_stats(request, link):
         "referrers": referrers,
         "max_referrer_count": max_referrer_count,
         "devices": queries.device_breakdown(None, link=link),
-        "countries": countries,
     }
     return render(request, "analytics/public.html", context)

@@ -64,6 +64,7 @@ class LinkForm(forms.ModelForm):
             "is_active",
             "permanent",
             "public_stats",
+            "public_hide_countries",
             "notes",
         ]
         widgets = {

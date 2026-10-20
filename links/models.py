@@ -121,6 +121,11 @@ class Link(models.Model):
     # Public shareable stats page at /stats/<code>; shows aggregate counts
     # only, never destinations, recent clicks, or per-click detail.
     public_stats = models.BooleanField(default=False)
+    # Optional extra privacy: drop the country list from the public page.
+    public_hide_countries = models.BooleanField(
+        default=False,
+        help_text="Hide the country breakdown on the public stats page.",
+    )
     tags = models.ManyToManyField(Tag, blank=True, related_name="links")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

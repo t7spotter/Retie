@@ -45,7 +45,8 @@ deployment, and no unnecessary infrastructure.
   password or 2FA change).
 - **Public stats pages**: opt-in per link at `/stats/<code>` — aggregate
   totals, 30-day chart, devices, and top countries, with no login and no
-  click-level detail.
+  click-level detail. A per-link "hide countries" option drops the
+  country list too for privacy-sensitive audiences.
 - **Bulk actions**: select several links on the dashboard (or the whole
   page) and activate, deactivate, tag, or trash them in one POST. The
   queryset is scoped to the signed-in user, so other people's links are

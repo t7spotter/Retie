@@ -77,6 +77,7 @@ def tool_create_link(user, args: dict) -> dict:
             "notes": args.get("notes", ""),
             "permanent": "on" if args.get("permanent") else "",
             "public_stats": "on" if args.get("public_stats") else "",
+            "public_hide_countries": "on" if args.get("public_hide_countries") else "",
             "password": password,
         },
         user=user,
@@ -93,6 +94,7 @@ def tool_create_link(user, args: dict) -> dict:
             "is_active": True,
             "permanent": bool(cleaned.get("permanent", False)),
             "public_stats": bool(cleaned.get("public_stats", False)),
+            "public_hide_countries": bool(cleaned.get("public_hide_countries", False)),
             "notes": cleaned.get("notes", ""),
         }
         if cleaned.get("password"):
@@ -122,6 +124,7 @@ def tool_create_link(user, args: dict) -> dict:
         "is_active": link.is_active,
         "permanent": link.permanent,
         "public_stats": link.public_stats,
+        "public_hide_countries": link.public_hide_countries,
         "notes": link.notes,
     }
 
@@ -174,6 +177,7 @@ def tool_get_link(user, args: dict) -> dict:
         "expires_at": link.expires_at,
         "permanent": link.permanent,
         "public_stats": link.public_stats,
+        "public_hide_countries": link.public_hide_countries,
         "notes": link.notes,
         "total_clicks": link.clicks.count(),
     }
@@ -206,6 +210,9 @@ def tool_update_link(user, args: dict) -> dict:
     if "public_stats" in args:
         link.public_stats = bool(args["public_stats"])
         updates.append("public_stats")
+    if "public_hide_countries" in args:
+        link.public_hide_countries = bool(args["public_hide_countries"])
+        updates.append("public_hide_countries")
     if "notes" in args:
         link.notes = str(args["notes"] or "")[:2000]
         updates.append("notes")
@@ -290,6 +297,7 @@ TOOLS = [
                 },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
                 "public_stats": {"type": "boolean", "description": "Publish a public stats page at /stats/<code>."},
+        "public_hide_countries": {"type": "boolean", "description": "Hide the country list on the public stats page."},
                 "notes": {"type": "string", "description": "Private owners-only note (max 2000 chars)."},
                 "permanent": {"type": "boolean", "description": "Respond with a cachable 301 redirect instead of 302. Browsers then stop reporting clicks."},
                 "password": {"type": "string", "description": "Optional gate password; visitors unlock once per browser session."},
@@ -337,6 +345,7 @@ TOOLS = [
                 },
                 "is_active": {"type": "boolean", "description": "Start/stop redirecting."},
                 "public_stats": {"type": "boolean", "description": "Publish/unpublish the public stats page."},
+                "public_hide_countries": {"type": "boolean", "description": "Hide countries on the public stats page."},
                 "permanent": {"type": "boolean", "description": "301 (true) instead of 302."},
                 "password": {"type": "string", "description": "Set or replace the link password."},
                 "remove_password": {"type": "boolean", "description": "Remove the link password."},

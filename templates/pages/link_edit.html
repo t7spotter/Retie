@@ -106,6 +106,10 @@
             <input type="checkbox" name="public_stats" id="id_public_stats" {% if link.public_stats %}checked{% endif %}>
             Public stats page
           </label>
+          <label for="id_public_hide_countries" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-500 dark:text-stone-400 lg:ml-4" title="Drops the country list from the public stats page">
+            <input type="checkbox" name="public_hide_countries" id="id_public_hide_countries" {% if link.public_hide_countries %}checked{% endif %}>
+            Hide countries on the public page
+          </label>
         </div>
         <div class="mt-4 border-t border-stone-200 pt-4 dark:border-stone-800">
           <label for="id_password" class="block text-sm font-medium text-stone-700 dark:text-stone-300">
