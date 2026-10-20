@@ -281,6 +281,28 @@ def profile(request):
                 "Weekly digest enabled." if want else "Weekly digest disabled.",
             )
 
+        elif action == "webhook":
+            from django.core.exceptions import ValidationError
+
+            from .models import UserSettings
+
+            url = (request.POST.get("webhook_url") or "").strip()
+            settings_row, _ = UserSettings.objects.get_or_create(user=request.user)
+            settings_row.webhook_url = url
+            try:
+                if url and not url.startswith("https://"):
+                    raise ValidationError("Click webhooks must be https:// URLs.")
+                settings_row.full_clean()
+                settings_row.save(update_fields=["webhook_url"])
+                messages.success(request, "Click webhook saved.")
+                if not url:
+                    messages.info(request, "Click webhook removed.")
+            except ValidationError:
+                settings_row.refresh_from_db()
+                messages.error(
+                    request, "Could not save that webhook URL — use an https:// URL."
+                )
+
     return render(
         request,
         "pages/profile.html",
@@ -290,6 +312,9 @@ def profile(request):
             "weekly_digest": bool(
                 getattr(request.user, "user_settings", None)
                 and request.user.user_settings.weekly_digest
+            ),
+            "webhook_url": getattr(
+                getattr(request.user, "user_settings", None), "webhook_url", ""
             ),
             "other_sessions": _other_sessions(request),
         },

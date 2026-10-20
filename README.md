@@ -20,6 +20,11 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Click webhooks**: set an HTTPS endpoint on your profile and every
+  recorded click is queued as an outbox row (no IP addresses in the
+  payload) and POSTed by the `flush_webhooks` management command — no
+  job queue; run it from cron. Failed deliveries retry, and are dropped
+  after 5 attempts.
 - **Ownership transfer**: hand any link — with its click history and
   tags — to another user on the server from the edit page, username or
   email lookup, with a confirmation step before it moves. The new owner
@@ -316,6 +321,15 @@ Cron (Mondays 09:00):
 Email delivery uses the standard `EMAIL_*` environment variables (see the
 table above); the default console backend prints the message to stdout so
 `send_digest` is safe to try before SMTP is configured.
+
+Click webhooks use the same pattern (cron every minute):
+
+```
+* * * * * cd /srv/retie && .venv/bin/python manage.py flush_webhooks
+```
+
+Rows without a reachable endpoint retry on the next run; after 5 failed
+attempts the payload is dropped so the outbox can never grow unbounded.
 
 ### 8. Updating dependencies
 

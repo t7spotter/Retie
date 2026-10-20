@@ -15,12 +15,47 @@ class UserSettings(models.Model):
         default=False,
         help_text="Email a weekly summary of link activity every Monday.",
     )
+    # Click webhooks: https only; a fire-and-forget outbox row is written
+    # per click and POSTed by the flush_webhooks command (no queue worker).
+    webhook_url = models.URLField(
+        blank=True,
+        default="",
+        help_text="HTTPS endpoint receiving one POST per recorded click.",
+    )
 
     class Meta:
         verbose_name_plural = "user settings"
 
     def __str__(self):
         return f"settings for {self.user}"
+
+
+class PendingWebhook(models.Model):
+    """One queued click-webhook POST to a user's endpoint.
+
+    Rows are written synchronously on click (a single fast insert) and
+    drained by `manage.py flush_webhooks` — simplest thing that works
+    without a job queue. Dropped after MAX_WEBHOOK_ATTEMPTS failures.
+    """
+
+    MAX_ATTEMPTS = 5
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="pending_webhooks",
+    )
+    payload = models.TextField()
+    attempts = models.PositiveIntegerField(default=0)
+    last_error = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["attempts", "created_at"])]
+
+    def __str__(self):
+        return f"webhook #{self.pk} for {self.user} (attempts={self.attempts})"
 from django.utils import timezone
 
 User = get_user_model()

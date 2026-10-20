@@ -751,7 +751,7 @@ def redirect_view(request, code):
     ):
         return _unlock_or_403(request, link)
 
-    from analytics.queries import record_click
+    from analytics.queries import record_click, enqueue_click_webhook
 
     # A/B split test: when variant B exists, flip a fair coin; the chosen
     # destination is served and its variant is stored on the click event.
@@ -762,7 +762,13 @@ def redirect_view(request, code):
         if variant == "b":
             target = link.variant_b
 
-    record_click(link, request, variant=variant)
+    click = record_click(link, request, variant=variant)
+    # Fire-and-forget outbox row for the owner's click webhook (no-op when
+    # no webhook URL is configured). Must never break the redirect.
+    try:
+        enqueue_click_webhook(click)
+    except Exception:
+        pass
     status = 301 if link.permanent else 302
     # A 301 would let browsers cache one arm of a split test for good; only
     # ever send it for links without an active test.

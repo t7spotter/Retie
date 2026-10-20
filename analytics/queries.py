@@ -4,6 +4,8 @@ All queries are scoped to a user's own links; nothing here exposes data
 across accounts.
 """
 
+import json
+
 from django.db.models import Count, Max, Q
 from django.db.models.functions import TruncDay
 from django.utils import timezone
@@ -74,6 +76,41 @@ def record_click(link, request, variant: str = "a") -> ClickEvent:
         country=country_for(request.META.get("REMOTE_ADDR", "")),
         is_bot=looks_like_bot(user_agent),
     )
+
+
+def enqueue_click_webhook(click: ClickEvent, settings_url: str = "") -> None:
+    """Write an outbox row for a click-webhook, if the owner wants one.
+
+    Never raises: a webhook hiccup must not fail the redirect.
+    """
+    from accounts.models import PendingWebhook, UserSettings
+    from django.conf import settings as dj_settings
+    from django.utils import timezone
+
+    owner = click.link.user
+    webhook_url = settings_url
+    if not webhook_url:
+        owner_settings = getattr(owner, "user_settings", None)
+        webhook_url = owner_settings.webhook_url if owner_settings else ""
+    if not webhook_url:
+        return
+
+    payload = {
+        "event": "click",
+        "code": click.link.code,
+        "url": f"{dj_settings.SITE_URL}/{click.link.code}",
+        "clicked_at": click.created_at.isoformat(),
+        "variant": click.variant,
+        "device": click.device,
+        "referrer": click.referrer,
+        "country": click.country,
+        "is_bot": click.is_bot,
+    }
+    try:
+        PendingWebhook.objects.create(user=owner, payload=json.dumps(payload))
+    except Exception:
+        # The short link itself must always work.
+        pass
 
 
 def is_active_q():
