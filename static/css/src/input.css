@@ -109,4 +109,82 @@
     @apply border-indigo-600 bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-600;
     background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M4 8h8'/%3e%3c/svg%3e");
   }
+
+  /*
+   * Flatpickr theme: keep the widget looking like the other components —
+   * rounded, stone surfaces, teal accent — in both light and dark modes.
+   * Loaded after vendor/flatpickr.min.css so these rules win the ties.
+   */
+  .flatpickr-calendar {
+    @apply rounded-xl border border-stone-200 bg-white font-sans py-1.5
+           shadow-xl dark:border-stone-700 dark:bg-stone-900;
+  }
+  .flatpickr-calendar::before,
+  .flatpickr-calendar::after {
+    border-top-color: var(--color-stone-200) !important;
+    border-bottom-color: var(--color-stone-200) !important;
+  }
+  .flatpickr-months {
+    @apply flex items-center;
+  }
+  .flatpickr-month {
+    @apply text-stone-800 dark:text-stone-100;
+  }
+  .flatpickr-current-month .cur-month,
+  .flatpickr-current-month .flatpickr-monthDropdown-months {
+    @apply font-semibold text-stone-800 dark:text-stone-100;
+  }
+  .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+    @apply bg-white text-stone-700 dark:bg-stone-900 dark:text-stone-200;
+  }
+  .flatpickr-weekdays,
+  .flatpickr-weekday {
+    @apply text-stone-400 dark:text-stone-500;
+  }
+  .flatpickr-day {
+    @apply rounded-lg text-stone-700 dark:text-stone-300 dark:font-medium;
+  }
+  .flatpickr-day:hover {
+    @apply border-transparent bg-stone-100 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-800;
+  }
+  .flatpickr-day.today {
+    @apply border-stone-400 dark:border-stone-500;
+  }
+  .flatpickr-day.today:hover {
+    @apply bg-stone-100 dark:bg-stone-800;
+  }
+  .flatpickr-day.today.selected {
+    @apply border-indigo-600 bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-600;
+  }
+  .flatpickr-day.selected,
+  .flatpickr-day.selected:hover {
+    @apply border-indigo-600 bg-indigo-600 font-semibold text-white dark:border-indigo-500 dark:bg-indigo-600;
+  }
+  .flatpickr-day.flatpickr-disabled,
+  .flatpickr-day.prevMonthDay,
+  .flatpickr-day.nextMonthDay {
+    @apply text-stone-300 dark:text-stone-700;
+  }
+  .flatpickr-months .flatpickr-prev-month svg,
+  .flatpickr-months .flatpickr-next-month svg {
+    @apply fill-stone-400 dark:fill-stone-500;
+  }
+  .flatpickr-months .flatpickr-prev-month:hover svg,
+  .flatpickr-months .flatpickr-next-month:hover svg {
+    @apply fill-stone-700 dark:fill-stone-200;
+  }
+  .flatpickr-time {
+    @apply border-t border-stone-200 dark:border-stone-700;
+  }
+  .flatpickr-time input,
+  .flatpickr-time .flatpickr-time-separator,
+  .flatpickr-time .flatpickr-am-pm {
+    @apply text-stone-800 dark:text-stone-200;
+  }
+  .flatpickr-time input:hover,
+  .flatpickr-time .flatpickr-am-pm:hover,
+  .flatpickr-time input:focus,
+  .flatpickr-time .flatpickr-am-pm:focus {
+    @apply bg-stone-100 dark:bg-stone-800;
+  }
 }

@@ -114,7 +114,11 @@
         <input type="datetime-local" name="expires_at" id="id_expires_at"
                value="{% if form.expires_at.value %}{{ form.expires_at.value|date:'Y-m-d\TH:i' }}{% endif %}"
                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:[color-scheme:dark] dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.expires_at.errors %}border-red-400{% endif %}">
-        <p class="mt-1.5 text-xs text-stone-400">Leave empty for a link that never expires.</p>
+        <div class="mt-1.5 flex items-center justify-between gap-3">
+          <p class="text-xs text-stone-400">Leave empty for a link that never expires.</p>
+          <button type="button" data-clear-picker="id_expires_at"
+                  class="shrink-0 text-xs text-stone-400 hover:text-stone-600 hover:underline dark:text-stone-500 dark:hover:text-stone-300">Clear</button>
+        </div>
         {% for error in form.expires_at.errors %}
         <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
         {% endfor %}
@@ -125,7 +129,11 @@
         <input type="datetime-local" name="goes_live_at" id="id_goes_live_at"
                value="{% if form.goes_live_at.value %}{{ form.goes_live_at.value|date:'Y-m-d\TH:i' }}{% endif %}"
                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:[color-scheme:dark] dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.goes_live_at.errors %}border-red-400{% endif %}">
-        <p class="mt-1.5 text-xs text-stone-400">Until then the link 404s. Leave empty to go live immediately.</p>
+        <div class="mt-1.5 flex items-center justify-between gap-3">
+          <p class="text-xs text-stone-400">Until then the link 404s. Leave empty to go live immediately.</p>
+          <button type="button" data-clear-picker="id_goes_live_at"
+                  class="shrink-0 text-xs text-stone-400 hover:text-stone-600 hover:underline dark:text-stone-500 dark:hover:text-stone-300">Clear</button>
+        </div>
         {% for error in form.goes_live_at.errors %}
         <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
         {% endfor %}

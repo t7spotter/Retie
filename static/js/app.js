@@ -208,6 +208,51 @@
     dialog.showModal();
   }
 
+  // ---- Date & time pickers (flatpickr) ----------------------------------
+  //
+  // Every datetime-local input gets a themed calendar+time widget. The
+  // visible "alt" input shows a human date; the original hidden input
+  // keeps the Y-m-dTH:i value Django's DateTimeField parses, so server
+  // behavior is unchanged.
+
+  var pickerFor = new WeakMap();
+
+  function initPickers() {
+    if (!window.flatpickr) return;
+    qsa('input[type="datetime-local"]').forEach(function (input) {
+      if (input.dataset.pickerInit) return;
+      input.dataset.pickerInit = "1";
+      var fp = window.flatpickr(input, {
+        enableTime: true,
+        dateFormat: "Y-m-dTH:i",      // submitted to Django
+        altInput: true,
+        altFormat: "D, M j, Y · h:i K", // shown to the human
+        altInputClass: input.className + " cursor-pointer select-none",
+        disableMobile: true,          // themed picker on phones too
+        ariaDateFormat: "D, M j, Y, h:i K",
+      });
+      pickerFor.set(input, fp);
+      // Retarget the field's label at the (now visible) alt input, which
+      // also opens the calendar on click.
+      var alt = fp.altInput;
+      if (alt) {
+        if (!alt.id) alt.id = input.id + "-alt";
+        var label = document.querySelector('label[for="' + input.id + '"]');
+        if (label) label.setAttribute("for", alt.id);
+        alt.placeholder = "Pick a date & time";
+      }
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    var clear = event.target.closest("[data-clear-picker]");
+    if (!clear) return;
+    var input = document.getElementById(clear.getAttribute("data-clear-picker"));
+    if (!input) return;
+    var fp = pickerFor.get(input);
+    if (fp) fp.clear();
+  });
+
   document.addEventListener("DOMContentLoaded", function () {
     applyTheme(currentTheme());
     qsa("[data-theme-choice]").forEach(function (btn) {
@@ -216,6 +261,7 @@
     refreshIcons();
     renderCharts();
     drawSparklines();
+    initPickers();
   });
 
   // Redraw icons after HTMX overwrites page fragments.

@@ -93,7 +93,7 @@ deployment, and no unnecessary infrastructure.
 - REST API at `/api/v1/` documented as OpenAPI 3 by drf-spectacular and served
   as a live docs portal (plus MCP for agents) by apiwarden at `/api/docs/`.
 - Modern responsive UI: Django templates + HTMX partial updates, Tailwind
-  CSS, Lucide icons, Chart.js, light/dark themes.
+  CSS, Lucide icons, Chart.js, Flatpickr date/time pickers, light/dark themes.
 - Docker Compose deployment with PostgreSQL and Gunicorn.
 
 ## Technology stack
@@ -102,7 +102,7 @@ deployment, and no unnecessary infrastructure.
 |------------|-----------------------------------------------------|
 | Backend    | Python 3.12+, Django 5.2 LTS, Django REST Framework |
 | Database   | PostgreSQL (psycopg 3)                              |
-| Frontend   | Django templates, HTMX, Tailwind CSS, Lucide, Chart.js |
+| Frontend   | Django templates, HTMX, Tailwind CSS, Lucide, Chart.js, Flatpickr |
 | Docs       | drf-spectacular (schema) + apiwarden (docs portal, MCP) |
 | Agents     | MCP server at `/mcp/` (Streamable HTTP, API-key auth) + docs MCP at `/api/docs/mcp` |
 | Serving    | Gunicorn + WhiteNoise (static), Docker Compose      |
@@ -347,7 +347,7 @@ Pinned in `requirements.txt`. To update: bump a pin, run
 commit the new pins. Frontend libraries are vendored under `static/vendor/`
 (record versions in the commit message; sources: htmx from
 unpkg.com/htmx.org, Chart.js from cdn.jsdelivr.net, Lucide from
-unpkg.com/lucide).
+unpkg.com/lucide.org/), Flatpickr from npmjs.com/package/flatpickr (4.6.13).
 
 ## Environment variables
 
