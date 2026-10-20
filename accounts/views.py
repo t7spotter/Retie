@@ -321,6 +321,106 @@ def profile(request):
     )
 
 
+@login_required
+def export_data(request):
+    """Download everything this account holds as one JSON document (GDPR)."""
+    import json
+
+    from analytics.models import ClickEvent
+    from links.models import Link
+
+    links = Link.objects.filter(user=request.user).prefetch_related("tags")
+    link_rows = []
+    for link in links:
+        link_rows.append(
+            {
+                "code": link.code,
+                "destination": link.destination,
+                "title": link.title,
+                "notes": link.notes,
+                "is_active": link.is_active,
+                "permanent": link.permanent,
+                "public_stats": link.public_stats,
+                "public_hide_countries": link.public_hide_countries,
+                "allowed_referrers": [d for d in link.allowed_referrers.split("\n") if d],
+                "password_protected": bool(link.password_hash),
+                "expires_at": link.expires_at.isoformat() if link.expires_at else None,
+                "goes_live_at": link.goes_live_at.isoformat() if link.goes_live_at else None,
+                "variant_b": link.variant_b,
+                "qr_dark": link.qr_dark,
+                "qr_light": link.qr_light,
+                "tags": sorted(tag.name for tag in link.tags.all()),
+                "created_at": link.created_at.isoformat(),
+                "deleted": link.deleted_at is not None,
+            }
+        )
+
+    clicks = ClickEvent.objects.filter(link__user=request.user).order_by("created_at")
+    click_rows = [
+        {
+            "code": click.link.code,
+            "clicked_at": click.created_at.isoformat(),
+            "variant": click.variant,
+            "device": click.device,
+            "referrer": click.referrer,
+            "country": click.country,
+            "is_bot": click.is_bot,
+        }
+        for click in clicks
+    ]
+
+    settings_row = getattr(request.user, "user_settings", None)
+    document = {
+        "exported_at": timezone.now().isoformat(),
+        "account": {
+            "username": request.user.username,
+            "email": request.user.email,
+            "date_joined": request.user.date_joined.isoformat(),
+            "weekly_digest": bool(settings_row and settings_row.weekly_digest),
+            "webhook_url": (settings_row.webhook_url if settings_row else ""),
+            "two_factor": bool(getattr(request.user, "two_factor", None)),
+        },
+        "links": link_rows,
+        "clicks": click_rows,
+    }
+    response = HttpResponse(
+        json.dumps(document, indent=1), content_type="application/json"
+    )
+    response["Content-Disposition"] = 'attachment; filename="retie-account-export.json"'
+    return response
+
+
+@login_required
+@require_POST
+def delete_account(request):
+    """Delete the account and everything in it — two-step confirmation.
+
+    Step 1 POST renders a warning page; step 2 (confirm_deletion=on)
+    hard-deletes the user row. Everything typed under CASCADE goes with
+    it: links, clicks, tags, API keys, sessions, settings.
+    """
+    if request.POST.get("confirm_deletion") == "on":
+        # Grab the row first: auth_logout() waves the session goodbye and
+        # reroutes request.user to AnonymousUser, which cannot be deleted.
+        from django.contrib.auth import get_user_model
+
+        row = get_user_model().objects.get(pk=request.user.pk)
+        username = row.username
+        row.delete()
+        auth_logout(request)
+        messages.info(
+            request,
+            f"Account {username} and all its links, analytics, and settings were deleted.",
+        )
+        return redirect("landing")
+
+    return render(
+        request,
+        "registration/account_delete.html",
+        {"link_count": request.user.links.count()},
+    )
+
+
 def _user_sessions(user, exclude_key=None):
     """Session model rows belonging to `user` that are still valid."""
     from django.contrib.sessions.models import Session

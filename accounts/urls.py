@@ -11,6 +11,8 @@ urlpatterns = [
     path("accounts/two-factor/qr.svg", views.two_factor_qr, name="two_factor_qr"),
     path("accounts/logout/", views.logout_view, name="logout"),
     path("accounts/profile/", views.profile, name="profile"),
+    path("accounts/export/", views.export_data, name="export_data"),
+    path("accounts/delete/", views.delete_account, name="delete_account"),
     path(
         "password/change/",
         auth_views.PasswordChangeView.as_view(template_name="registration/password_change.html"),

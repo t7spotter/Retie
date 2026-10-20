@@ -20,6 +20,11 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Data export & account deletion**: one click downloads everything
+  the account holds as a single JSON document (account info, links with
+  all settings and notes, and every recorded anonymous click). Account
+  deletion (profile → confirm → gone) cascades to links, analytics, API
+  keys, and sessions, and frees the short codes for reuse.
 - **Click webhooks**: set an HTTPS endpoint on your profile and every
   recorded click is queued as an outbox row (no IP addresses in the
   payload) and POSTed by the `flush_webhooks` management command — no
