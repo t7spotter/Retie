@@ -68,6 +68,10 @@ class LinkForm(forms.ModelForm):
     # A/B split-testing: optional second destination. Validated with the
     # same rules as the main destination (scheme, blocklist).
     variant_b = forms.CharField(required=False, strip=True)
+    # QR styling: hex colors like #0e353c. Optional — empty falls back to
+    # the server defaults when the SVG is rendered.
+    qr_dark = forms.CharField(required=False, strip=True)
+    qr_light = forms.CharField(required=False, strip=True)
 
     class Meta:
         model = Link
@@ -78,6 +82,8 @@ class LinkForm(forms.ModelForm):
             "expires_at",
             "goes_live_at",
             "variant_b",
+            "qr_dark",
+            "qr_light",
             "is_active",
             "permanent",
             "public_stats",
@@ -168,6 +174,18 @@ class LinkForm(forms.ModelForm):
                 self.add_error(
                     "variant_b", "Enter a valid http:// or https:// URL."
                 )
+        # QR colors: accept and store as lowercase 6-digit hex with "#".
+        import re
+
+        for name in ("qr_dark", "qr_light"):
+            value = cleaned.get(name)
+            if not value:
+                cleaned[name] = ""
+                continue
+            if not re.fullmatch(r"#?[0-9a-fA-F]{6}", value):
+                self.add_error(name, "Use a 6-digit hex color like #0e353c.")
+            else:
+                cleaned[name] = f"#{value.lstrip('#').lower()}"
         return cleaned
 
     def _save_instance(self, link: Link, commit: bool) -> Link:
@@ -187,6 +205,10 @@ class LinkForm(forms.ModelForm):
         # from the POST, so clearing variant B by sending nothing needs an
         # explicit assignment here.
         link.variant_b = self.cleaned_data.get("variant_b") or ""
+        # QR colors likewise (both empty = fall back to server defaults
+        # when the SVG is generated).
+        link.qr_dark = self.cleaned_data.get("qr_dark") or ""
+        link.qr_light = self.cleaned_data.get("qr_light") or ""
         with transaction.atomic():
             link.save()
             for name in self.tag_names:

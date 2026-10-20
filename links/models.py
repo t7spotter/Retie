@@ -162,6 +162,10 @@ class Link(models.Model):
     # roughly 50/50 between destination (variant A) and variant_b (B).
     # The variant actually shown is stored on each click event.
     variant_b = models.URLField(blank=True, default="")
+    # QR styling: owner-chosen colors. Empty values fall back to the
+    # application defaults when the SVG is generated.
+    qr_dark = models.CharField(max_length=7, blank=True, default="")  # e.g. #0e353c
+    qr_light = models.CharField(max_length=7, blank=True, default="")
     # Hotlink protection: when non-empty, redirects are served only when
     # the visitor's referrer host matches one of these domains (subdomains
     # included). Direct traffic (no referrer header) is always allowed —

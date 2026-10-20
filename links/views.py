@@ -239,14 +239,17 @@ def link_qr(request, code: str):
     from django.shortcuts import get_object_or_404
 
     link = get_object_or_404(Link, code=code)
+    # Owner styling wins; empty values fall back to the defaults.
+    dark = link.qr_dark or "#0e353c"
+    light = link.qr_light or "#ffffff"
     buffer = io.BytesIO()
     segno.make(f"{settings.SITE_URL}/{link.code}", error="m").save(
         buffer,
         kind="svg",
         scale=8,
         border=2,
-        dark="#0e353c",
-        light="#ffffff",
+        dark=dark,
+        light=light,
     )
     response = HttpResponse(buffer.getvalue(), content_type="image/svg+xml")
     response["Cache-Control"] = "no-store"

@@ -20,6 +20,9 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **QR styling**: pick the dark and light colors of each link's QR SVG
+  (`/<code>.qr.svg`) from the edit page, or via the API/MCP — handy for
+  matching printed material. Empty values fall back to the defaults.
 - **A/B split testing**: give a link an optional variant B destination —
   visitors go to A or B roughly 50/50 (never cached; the link ignores
   its 301 setting while a test runs), and the analytics page and CSV

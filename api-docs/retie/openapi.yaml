@@ -483,6 +483,12 @@ components:
         allowed_referrers:
           type: string
           nullable: true
+        qr_dark:
+          type: string
+          maxLength: 7
+        qr_light:
+          type: string
+          maxLength: 7
         password:
           type: string
           writeOnly: true
@@ -622,6 +628,12 @@ components:
         allowed_referrers:
           type: string
           nullable: true
+        qr_dark:
+          type: string
+          maxLength: 7
+        qr_light:
+          type: string
+          maxLength: 7
         password:
           type: string
           writeOnly: true

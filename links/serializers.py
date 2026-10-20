@@ -36,6 +36,18 @@ class LinkSerializer(serializers.ModelSerializer):
     # always reads back as a clean list.
     allowed_referrers = ReferrerListField(required=False, allow_null=True)
 
+    def _validate_hex_color(self, value, field_label):
+        import re
+
+        value = (value or "").strip()
+        if not value:
+            return ""
+        if not re.fullmatch(r"#?[0-9a-fA-F]{6}", value):
+            raise serializers.ValidationError(
+                f"{field_label}: use a 6-digit hex color like #0e353c."
+            )
+        return f"#{value.lstrip('#').lower()}"
+
     class Meta:
         model = Link
         fields = [
@@ -55,6 +67,8 @@ class LinkSerializer(serializers.ModelSerializer):
             "public_hide_countries",
             "notes",
             "allowed_referrers",
+            "qr_dark",
+            "qr_light",
             "password",
             "remove_password",
             "created_at",
@@ -119,6 +133,12 @@ class LinkSerializer(serializers.ModelSerializer):
         from .models import validate_destination
 
         return validate_destination(value)
+
+    def validate_qr_dark(self, value):
+        return self._validate_hex_color(value, "qr_dark")
+
+    def validate_qr_light(self, value):
+        return self._validate_hex_color(value, "qr_light")
 
     def validate_code(self, value):
         from .models import validate_alias

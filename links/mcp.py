@@ -115,6 +115,13 @@ def tool_create_link(user, args: dict) -> dict:
         if args.get("variant_b"):
             from .models import validate_destination
             payload["variant_b"] = validate_destination(str(args["variant_b"]))
+        for qr_key in ("qr_dark", "qr_light"):
+            if args.get(qr_key):
+                import re
+                color = str(args[qr_key]).strip()
+                if not re.fullmatch(r"#?[0-9a-fA-F]{6}", color):
+                    raise ToolError(f"{qr_key} must be a 6-digit hex color like #0e353c.")
+                payload[qr_key] = f"#{color.lstrip('#').lower()}"
         goes_live = _parse_expires(args["goes_live_at"], "goes_live_at") if args.get("goes_live_at") else None
         if goes_live is not None:
             payload["goes_live_at"] = goes_live
@@ -147,6 +154,8 @@ def tool_create_link(user, args: dict) -> dict:
         "expires_at": link.expires_at,
         "goes_live_at": link.goes_live_at,
         "variant_b": link.variant_b,
+        "qr_dark": link.qr_dark,
+        "qr_light": link.qr_light,
     }
 
 
@@ -204,6 +213,8 @@ def tool_get_link(user, args: dict) -> dict:
         "expires_at": link.expires_at,
         "goes_live_at": link.goes_live_at,
         "variant_b": link.variant_b,
+        "qr_dark": link.qr_dark,
+        "qr_light": link.qr_light,
         "total_clicks": link.clicks.count(),
     }
 
@@ -239,6 +250,19 @@ def tool_update_link(user, args: dict) -> dict:
             from .models import validate_destination
             link.variant_b = validate_destination(str(args["variant_b"]))
         updates.append("variant_b")
+    import re as _re
+    if "qr_dark" in args:
+        color = str(args["qr_dark"] or "").strip()
+        if color and not _re.fullmatch(r"#?[0-9a-fA-F]{6}", color):
+            raise ToolError("qr_dark must be a 6-digit hex color like #0e353c.")
+        link.qr_dark = f"#{color.lstrip('#').lower()}" if color else ""
+        updates.append("qr_dark")
+    if "qr_light" in args:
+        color = str(args["qr_light"] or "").strip()
+        if color and not _re.fullmatch(r"#?[0-9a-fA-F]{6}", color):
+            raise ToolError("qr_light must be a 6-digit hex color like #ffffff.")
+        link.qr_light = f"#{color.lstrip('#').lower()}" if color else ""
+        updates.append("qr_light")
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")
@@ -334,6 +358,8 @@ TOOLS = [
                     "type": "string",
                     "description": "Optional second destination (A/B split test, 50/50).",
                 },
+                "qr_dark": {"type": "string", "description": "QR code color (6-digit hex, e.g. #0e353c)."},
+                "qr_light": {"type": "string", "description": "QR background color (6-digit hex)."},
                 "alias": {"type": "string", "description": "Optional custom short code (alias)."},
                 "title": {"type": "string", "description": "Optional human-readable title."},
                 "tags": {"type": "string", "description": "Optional comma-separated tags."},
@@ -388,6 +414,8 @@ TOOLS = [
                 "code": {"type": "string", "description": "Current short code of the link."},
                 "destination": {"type": "string", "description": "New destination (http/https)."},
                 "variant_b": {"type": ["string", "null"], "description": "New variant B destination (A/B test); empty string or null ends the test."},
+                "qr_dark": {"type": "string", "description": "QR code color (6-digit hex)."},
+                "qr_light": {"type": "string", "description": "QR background color (6-digit hex)."},
                 "alias": {"type": "string", "description": "New short code."},
                 "title": {"type": "string", "description": "New title ('' clears it)."},
                 "expires_at": {
