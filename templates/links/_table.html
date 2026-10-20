@@ -19,6 +19,7 @@
   </div>
   {% endif %}
   <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    {{ spark|json_script:"spark-all-data" }}
     {% if page_obj.object_list %}
     <div class="overflow-x-auto">
       <table class="w-full min-w-[640px] text-left text-sm">

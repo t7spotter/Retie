@@ -42,7 +42,10 @@
       <span class="inline-flex rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-500 dark:bg-stone-800 dark:text-stone-400">Inactive</span>
     {% endif %}
   </td>
-  <td class="px-5 py-3.5 text-right tabular-nums">{{ link.click_count }}</td>
+  <td class="px-5 py-3.5 text-right tabular-nums">
+    {{ link.click_count }}
+    <span data-spark="{{ link.id }}" class="mt-0.5 flex h-3.5 items-end justify-end gap-px" aria-hidden="true"></span>
+  </td>
   <td class="px-5 py-3.5 text-xs text-stone-500 dark:text-stone-400">
     {% if link.last_click_at %}{{ link.last_click_at|naturaltime }}{% else %}—{% endif %}
   </td>

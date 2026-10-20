@@ -175,12 +175,14 @@
     });
     refreshIcons();
     renderCharts();
+    drawSparklines();
   });
 
   // Redraw icons after HTMX overwrites page fragments.
   document.body.addEventListener("htmx:afterSwap", function (event) {
     refreshIcons(event.target);
     refreshBulkBar(); // rows were re-rendered; resync selection bar
+    drawSparklines();
   });
 
   // ---- Bulk selection ---------------------------------------------------
@@ -203,6 +205,31 @@
     if (count) count.textContent = codes.length + " selected";
     var field = document.getElementById("bulk-codes");
     if (field) field.value = codes.join(",");
+  }
+
+  // ---- Row sparklines (14-day click micro-bars) -------------------------
+
+  function drawSparklines() {
+    var dataEl = qs("#spark-all-data");
+    if (!dataEl) return;
+    var spark;
+    try { spark = JSON.parse(dataEl.textContent); } catch (e) { return; }
+    qsa("[data-spark]").forEach(function (holder) {
+      var series = spark[holder.getAttribute("data-spark")];
+      holder.textContent = "";
+      if (!series || !series.length) return;
+      var max = Math.max.apply(null, series) || 1;
+      series.forEach(function (n) {
+        var bar = document.createElement("i");
+        // At least 2px tall when zero so empty days stay visible.
+        bar.style.height = (n > 0 ? Math.max(3, Math.round((n / max) * 14)) : 2) + "px";
+        bar.style.width = "3px";
+        bar.className = n > 0
+          ? "inline-block rounded-sm bg-indigo-500/60"
+          : "inline-block rounded-sm bg-stone-200 dark:bg-stone-700";
+        holder.appendChild(bar);
+      });
+    });
   }
 
   // Delegated so checkboxes inside HTMX-refreshed rows keep working.

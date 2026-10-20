@@ -132,6 +132,11 @@ def _filtered_links(user, request):
 
 
 def _table_page(request, links):
+    from analytics.models import ClickEvent
+    from django.db.models import Count
+    from django.db.models.functions import TruncDay
+    from django.utils import timezone
+
     paginator = Paginator(links, LINKS_PER_PAGE)
     query = (request.GET.get("q") or "").strip()
     status = request.GET.get("status") or "all"
@@ -144,13 +149,40 @@ def _table_page(request, links):
     if tag:
         parts.append(("tag", tag))
     tag_names = list(request.user.tags.order_by("name").values_list("name", flat=True))
+
+    # 14-day per-link click counts for the row sparkline. One aggregate
+    # query over this user's (non-bot) clicks; days with no clicks stay 0.
+    page = paginator.get_page(request.GET.get("page"))
+    spark = {}
+    page_links = list(page.object_list)
+    if page_links:
+        start = (timezone.now() - timezone.timedelta(days=13)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        rows = (
+            ClickEvent.objects.filter(link__in=page_links, is_bot=False, created_at__gte=start)
+            .annotate(day=TruncDay("created_at"))
+            .values("link_id", "day")
+            .annotate(n=Count("id"))
+        )
+        by_day = {}
+        for row in rows:
+            offset = (row["day"].date() - start.date()).days
+            by_day.setdefault(row["link_id"], {})[offset] = row["n"]
+        days = list(range(14))
+        spark = {
+            link.id: [by_day.get(link.id, {}).get(offset, 0) for offset in days]
+            for link in page_links
+        }
+
     return {
-        "page_obj": paginator.get_page(request.GET.get("page")),
+        "page_obj": page,
         "query": query,
         "status": status,
         "tag": tag,
         "tag_names": tag_names,
         "table_query": urlencode(parts),
+        "spark": spark,
     }
 
 
