@@ -445,6 +445,10 @@ components:
         title:
           type: string
           maxLength: 200
+        variant_b:
+          type: string
+          format: uri
+          maxLength: 200
         is_active:
           type: boolean
           default: true
@@ -455,6 +459,10 @@ components:
         status:
           type: string
           readOnly: true
+        goes_live_at:
+          type: string
+          format: date-time
+          nullable: true
         tags:
           type: array
           items: {}
@@ -466,6 +474,15 @@ components:
         public_stats:
           type: boolean
           default: false
+        public_hide_countries:
+          type: boolean
+          default: false
+          description: Hide the country breakdown on the public stats page.
+        notes:
+          type: string
+        allowed_referrers:
+          type: string
+          nullable: true
         password:
           type: string
           writeOnly: true
@@ -567,6 +584,10 @@ components:
         title:
           type: string
           maxLength: 200
+        variant_b:
+          type: string
+          format: uri
+          maxLength: 200
         is_active:
           type: boolean
           default: true
@@ -577,6 +598,10 @@ components:
         status:
           type: string
           readOnly: true
+        goes_live_at:
+          type: string
+          format: date-time
+          nullable: true
         tags:
           type: array
           items: {}
@@ -588,6 +613,15 @@ components:
         public_stats:
           type: boolean
           default: false
+        public_hide_countries:
+          type: boolean
+          default: false
+          description: Hide the country breakdown on the public stats page.
+        notes:
+          type: string
+        allowed_referrers:
+          type: string
+          nullable: true
         password:
           type: string
           writeOnly: true

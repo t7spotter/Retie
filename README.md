@@ -20,6 +20,11 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **A/B split testing**: give a link an optional variant B destination —
+  visitors go to A or B roughly 50/50 (never cached; the link ignores
+  its 301 setting while a test runs), and the analytics page and CSV
+  export count clicks per variant. Tests live entirely in one row; no
+  job queue.
 - **Scheduled activation**: give a link an optional go-live moment —
   it 404s until then (dashboard shows a "Scheduled" badge), then starts
   redirecting automatically. Settable on the create/edit forms, via the

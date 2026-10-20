@@ -44,6 +44,7 @@ class LinkSerializer(serializers.ModelSerializer):
             "short_url",
             "destination",
             "title",
+            "variant_b",
             "is_active",
             "expires_at",
             "status",

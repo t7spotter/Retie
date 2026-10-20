@@ -112,6 +112,9 @@ def tool_create_link(user, args: dict) -> dict:
             from django.contrib.auth.hashers import make_password
 
             payload["password_hash"] = make_password(cleaned["password"])
+        if args.get("variant_b"):
+            from .models import validate_destination
+            payload["variant_b"] = validate_destination(str(args["variant_b"]))
         goes_live = _parse_expires(args["goes_live_at"], "goes_live_at") if args.get("goes_live_at") else None
         if goes_live is not None:
             payload["goes_live_at"] = goes_live
@@ -143,6 +146,7 @@ def tool_create_link(user, args: dict) -> dict:
         "notes": link.notes,
         "expires_at": link.expires_at,
         "goes_live_at": link.goes_live_at,
+        "variant_b": link.variant_b,
     }
 
 
@@ -199,6 +203,7 @@ def tool_get_link(user, args: dict) -> dict:
         "notes": link.notes,
         "expires_at": link.expires_at,
         "goes_live_at": link.goes_live_at,
+        "variant_b": link.variant_b,
         "total_clicks": link.clicks.count(),
     }
 
@@ -227,6 +232,13 @@ def tool_update_link(user, args: dict) -> dict:
     if "goes_live_at" in args:
         link.goes_live_at = _parse_expires(args["goes_live_at"], "goes_live_at") if args["goes_live_at"] else None
         updates.append("goes_live_at")
+    if "variant_b" in args:
+        if args["variant_b"] in (None, ""):
+            link.variant_b = ""
+        else:
+            from .models import validate_destination
+            link.variant_b = validate_destination(str(args["variant_b"]))
+        updates.append("variant_b")
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")
@@ -318,6 +330,10 @@ TOOLS = [
                     "type": "string",
                     "description": "Full destination URL, must start with http:// or https://.",
                 },
+                "variant_b": {
+                    "type": "string",
+                    "description": "Optional second destination (A/B split test, 50/50).",
+                },
                 "alias": {"type": "string", "description": "Optional custom short code (alias)."},
                 "title": {"type": "string", "description": "Optional human-readable title."},
                 "tags": {"type": "string", "description": "Optional comma-separated tags."},
@@ -371,6 +387,7 @@ TOOLS = [
             "properties": {
                 "code": {"type": "string", "description": "Current short code of the link."},
                 "destination": {"type": "string", "description": "New destination (http/https)."},
+                "variant_b": {"type": ["string", "null"], "description": "New variant B destination (A/B test); empty string or null ends the test."},
                 "alias": {"type": "string", "description": "New short code."},
                 "title": {"type": "string", "description": "New title ('' clears it)."},
                 "expires_at": {

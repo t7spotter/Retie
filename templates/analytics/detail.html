@@ -154,6 +154,34 @@
       <p class="mt-4 text-sm text-stone-500 dark:text-stone-400">No clicks recorded yet.</p>
       {% endif %}
     </div>
+
+    {% if link.variant_b %}
+    <!-- A/B variants -->
+    <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <h2 class="text-sm font-semibold text-stone-700 dark:text-stone-200">A/B split test</h2>
+      <ul class="mt-4 space-y-3">
+        <li>
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <span class="text-stone-700 dark:text-stone-200" title="{{ link.destination }}">Variant A <span class="text-stone-400">(destination)</span></span>
+            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ variant_a_count }}</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+            <div class="h-full rounded-full bg-indigo-500" style="width: {% widthratio variant_a_count total_clicks 100 %}%"></div>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center justify-between gap-3 text-sm">
+            <span class="text-stone-700 dark:text-stone-200" title="{{ link.variant_b }}">Variant B</span>
+            <span class="shrink-0 font-medium tabular-nums text-stone-500 dark:text-stone-400">{{ variant_b_count }}</span>
+          </div>
+          <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
+            <div class="h-full rounded-full bg-amber-500" style="width: {% widthratio variant_b_count total_clicks 100 %}%"></div>
+          </div>
+        </li>
+      </ul>
+      <p class="mt-3 text-xs text-stone-400">Roughly 50/50 per visit; counts include every valid visitor.</p>
+    </div>
+    {% endif %}
   </div>
 
   <!-- Recently clicked -->

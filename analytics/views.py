@@ -23,10 +23,13 @@ def link_analytics(request, code):
     series = queries.clicks_over_time(request.user, days=30, link=link, include_bots=include_bots)
     referrers = queries.referrer_breakdown(request.user, link=link, limit=10, include_bots=include_bots)
     max_referrer_count = max((row["count"] for row in referrers), default=0)
+    variants = queries.variant_breakdown(request.user, link=link, include_bots=include_bots) if link.variant_b else {}
 
     context = {
         "link": link,
         "bots": include_bots,
+        "variant_a_count": variants.get("a", 0),
+        "variant_b_count": variants.get("b", 0),
         "total_clicks": link.clicks.count(),
         "bot_clicks": link.clicks.filter(is_bot=True).count(),
         "total_clicks_30": sum(point["clicks"] for point in series),
@@ -113,9 +116,12 @@ def link_analytics_csv(request, code):
 
     for row in queries.referrer_breakdown(request.user, link=link, limit=20):
         writer.writerow(["referrer", row["referrer"], row["count"]])
-    for device, count in queries.device_breakdown(request.user, link=link).items():
-        writer.writerow(["device", device, count])
+    for for_device, count in queries.device_breakdown(request.user, link=link).items():
+        writer.writerow(["device", for_device, count])
     for row in queries.country_breakdown(request.user, link=link, limit=20):
         writer.writerow(["country", row["country"], row["count"]])
+    if link.variant_b:
+        for variant, count in sorted(queries.variant_breakdown(request.user, link=link).items()):
+            writer.writerow(["variant", variant, count])
     writer.writerow(["meta", "total_clicks_non_bot", link.clicks.filter(is_bot=False).count()])
     return response

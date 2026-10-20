@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 
 from .models import Link, Tag, generate_short_code, validate_alias, validate_destination
@@ -64,6 +65,9 @@ class LinkForm(forms.ModelForm):
         widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
         input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"],
     )
+    # A/B split-testing: optional second destination. Validated with the
+    # same rules as the main destination (scheme, blocklist).
+    variant_b = forms.CharField(required=False, strip=True)
 
     class Meta:
         model = Link
@@ -73,6 +77,7 @@ class LinkForm(forms.ModelForm):
             "code",
             "expires_at",
             "goes_live_at",
+            "variant_b",
             "is_active",
             "permanent",
             "public_stats",
@@ -147,11 +152,22 @@ class LinkForm(forms.ModelForm):
             )
         # Referrer allow-list: normalize now so a bad entry becomes a field
         # error instead of an exception at save time.
-        from .models import normalize_referrer_domains
+        from .models import normalize_referrer_domains, validate_destination
 
         cleaned["allowed_referrers"] = "\n".join(
             normalize_referrer_domains(cleaned.get("allowed_referrers") or "")
         )
+        # Variant B: same rules as the main destination; attribute errors
+        # to the field so the form redisplay shows them next to the input.
+        if cleaned.get("variant_b"):
+            from .models import validate_destination
+
+            try:
+                cleaned["variant_b"] = validate_destination(cleaned["variant_b"])
+            except ValidationError:
+                self.add_error(
+                    "variant_b", "Enter a valid http:// or https:// URL."
+                )
         return cleaned
 
     def _save_instance(self, link: Link, commit: bool) -> Link:
@@ -167,6 +183,10 @@ class LinkForm(forms.ModelForm):
         # Normalize the referrer allow-list (may raise ValidationError with a
         # clean message).
         link.allowed_referrers = self.cleaned_data.get("allowed_referrers") or ""
+        # construct_instance skips defaulted fields whose value is omitted
+        # from the POST, so clearing variant B by sending nothing needs an
+        # explicit assignment here.
+        link.variant_b = self.cleaned_data.get("variant_b") or ""
         with transaction.atomic():
             link.save()
             for name in self.tag_names:

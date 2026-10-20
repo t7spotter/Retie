@@ -158,6 +158,10 @@ class Link(models.Model):
     # Optional go-live moment: while in the future the link does not
     # redirect yet, regardless of is_active.
     goes_live_at = models.DateTimeField(null=True, blank=True)
+    # A/B split testing: when variant_b is non-empty, traffic is split
+    # roughly 50/50 between destination (variant A) and variant_b (B).
+    # The variant actually shown is stored on each click event.
+    variant_b = models.URLField(blank=True, default="")
     # Hotlink protection: when non-empty, redirects are served only when
     # the visitor's referrer host matches one of these domains (subdomains
     # included). Direct traffic (no referrer header) is always allowed —

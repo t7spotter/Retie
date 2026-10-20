@@ -42,6 +42,21 @@
       </div>
 
       <div>
+        <details class="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-stone-700 dark:bg-stone-800/60" {% if form.variant_b.value or form.instance.variant_b %}open{% endif %}>
+          <summary class="cursor-pointer text-sm font-medium text-stone-700 dark:text-stone-300">A/B split test</summary>
+          <div class="mt-3">
+            <label for="id_variant_b" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Variant B destination <span class="font-normal text-stone-400">(empty = no test)</span></label>
+            <input type="text" inputmode="url" name="variant_b" id="id_variant_b" value="{{ form.variant_b.value|default:'' }}"
+                   class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.variant_b.errors %}border-red-400{% endif %}">
+            <p class="mt-1.5 text-xs text-stone-400">Variant A is the destination above. When B is set, traffic is split roughly 50/50 and clicks are counted per variant.</p>
+            {% for error in form.variant_b.errors %}
+            <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </details>
+      </div>
+
+      <div>
         <label for="id_title" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Title</label>
         <input type="text" name="title" id="id_title" value="{{ form.title.value|default:'' }}"
                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.title.errors %}border-red-400{% endif %}">

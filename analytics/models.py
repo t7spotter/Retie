@@ -30,6 +30,9 @@ class ClickEvent(models.Model):
         # analytics never outlive the links they describe.
     )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    # A/B variant actually served on this click ("a" = the main
+    # destination, always recorded even when the link has no test).
+    variant = models.CharField(max_length=1, choices=[("a", "A"), ("b", "B")], default="a")
     referrer = models.URLField(max_length=2048, blank=True, default="")
     device = models.CharField(
         max_length=16,

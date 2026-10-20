@@ -55,7 +55,7 @@ def looks_like_bot(user_agent: str) -> bool:
     return any(token in ua for token in BOT_UA_TOKENS)
 
 
-def record_click(link, request) -> ClickEvent:
+def record_click(link, request, variant: str = "a") -> ClickEvent:
     """Persist one redirect event for `link`.
 
     The referrer is only stored when sent by the browser; the IP address is
@@ -68,6 +68,7 @@ def record_click(link, request) -> ClickEvent:
 
     return ClickEvent.objects.create(
         link=link,
+        variant=variant,
         referrer=request.META.get("HTTP_REFERER", "")[:2048],
         device=device_category(user_agent),
         country=country_for(request.META.get("REMOTE_ADDR", "")),
@@ -147,6 +148,17 @@ def device_breakdown(user, link=None, include_bots: bool = False) -> dict:
         clicks = clicks.exclude(is_bot=True)
     rows = clicks.values("device").annotate(count=Count("id")).order_by("-count")
     return {row["device"]: row["count"] for row in rows}
+
+
+def variant_breakdown(user, link=None, include_bots: bool = False) -> dict:
+    """Click counts per A/B variant actually served ("a", "b"), if any."""
+    clicks = ClickEvent.objects.filter(link__user=user)
+    if link is not None:
+        clicks = clicks.filter(link=link)
+    if not include_bots:
+        clicks = clicks.exclude(is_bot=True)
+    rows = clicks.values("variant").annotate(count=Count("id"))
+    return {row["variant"]: row["count"] for row in rows}
 
 
 def country_breakdown(user, link=None, limit: int = 8, include_bots: bool = False) -> list:

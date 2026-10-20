@@ -2,6 +2,7 @@
 
 import csv
 import io
+import random
 
 from functools import wraps
 
@@ -677,10 +678,23 @@ def redirect_view(request, code):
 
     from analytics.queries import record_click
 
-    record_click(link, request)
+    # A/B split test: when variant B exists, flip a fair coin; the chosen
+    # destination is served and its variant is stored on the click event.
+    target = link.destination
+    variant = "a"
+    if link.variant_b:
+        variant = "b" if random.random() < 0.5 else "a"
+        if variant == "b":
+            target = link.variant_b
+
+    record_click(link, request, variant=variant)
     status = 301 if link.permanent else 302
+    # A 301 would let browsers cache one arm of a split test for good; only
+    # ever send it for links without an active test.
+    if link.variant_b:
+        status = 302
     return HttpResponseRedirect(
-        link.destination,
+        target,
         status=status,
         headers={"Cache-Control": "no-store" if status == 302 else "max-age=3600"},
     )
