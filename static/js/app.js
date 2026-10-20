@@ -165,8 +165,48 @@
       copyText(copyBtn.dataset.copy, function () {
         showToast("Copied " + copyBtn.dataset.copy);
       });
+      return;
     }
+
+    // QR modal — but only when the click isn't inside the already-open one.
+    var qrModal = document.getElementById("qr-modal");
+    if (qrModal) {
+      if (event.target.closest("#qr-modal-copy")) {
+        copyText(qrModal.dataset.url || "", function () {
+          showToast("Copied " + (qrModal.dataset.url || ""));
+        });
+        return;
+      }
+      // Close button, or a click on the dark backdrop (outside the panel).
+      if (event.target.closest("[data-qr-close]") ||
+          (qrModal.open && !event.target.closest("#qr-modal > div"))) {
+        qrModal.close();
+        return;
+      }
+    }
+
+    // QR popup: open from a row button.
+    var qrBtn = target.closest("[data-qr]");
+    if (qrBtn) openQrModal(qrBtn);
   });
+
+  // ---- QR modal ----------------------------------------------------------
+
+  function openQrModal(trigger) {
+    var dialog = document.getElementById("qr-modal");
+    if (!dialog) return;
+    qs("#qr-modal-code").textContent = "/" + trigger.dataset.qr;
+    var url = trigger.dataset.qrUrl;
+    var urlEl = qs("#qr-modal-url");
+    urlEl.textContent = url;
+    urlEl.title = url;
+    dialog.dataset.url = url;
+    qs("#qr-modal-image").src = trigger.dataset.qrSrc;
+    var download = qs("#qr-modal-download");
+    download.href = trigger.dataset.qrSrc;
+    download.setAttribute("download", "qr-" + trigger.dataset.qr + ".svg");
+    dialog.showModal();
+  }
 
   document.addEventListener("DOMContentLoaded", function () {
     applyTheme(currentTheme());
