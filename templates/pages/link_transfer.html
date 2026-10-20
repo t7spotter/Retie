@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Transfer {{ link.code }} — Retie{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-xl px-4 py-10 sm:px-6">
+  <a href="{% url 'link_edit' link.code %}" class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200">
+    <i data-lucide="arrow-left" class="h-4 w-4"></i> Back to editing
+  </a>
+
+  <div class="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <h1 class="text-lg font-semibold tracking-tight text-stone-900 dark:text-white">Transfer ownership</h1>
+
+    {% if error %}
+      <form method="post" action="{% url 'link_transfer' link.code %}" class="mt-6 space-y-4">
+        {% csrf_token %}
+        <div class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{{ error }}</div>
+        <input type="text" name="new_owner" value="{{ request.POST.new_owner }}" placeholder="username or email"
+               class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700 dark:bg-stone-800 dark:text-white">
+        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">Look up recipient</button>
+      </form>
+    {% elif new_owner %}
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
+        Hand <span class="font-medium text-indigo-600 dark:text-indigo-400">{{ SITE_URL }}/{{ link.code }}</span>
+        over to <span class="font-medium">{{ new_owner.username }}</span>?
+      </p>
+      <ul class="mt-4 space-y-1 text-sm text-stone-600 dark:text-stone-300">
+        <li>&middot; Click history moves with the link</li>
+        <li>&middot; Tags are re-created under their account if needed</li>
+        <li>&middot; You lose access until they transfer it back</li>
+      </ul>
+      <form method="post" action="{% url 'link_transfer' link.code %}" class="mt-6 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="new_owner" value="{{ new_owner.pk }}">
+        <input type="hidden" name="confirm_transfer" value="on">
+        <div class="flex gap-3">
+          <a href="{% url 'link_edit' link.code %}" class="rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">Cancel</a>
+          <button type="submit" class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-500">
+            Transfer to {{ new_owner.username }}
+          </button>
+        </div>
+      </form>
+    {% else %}
+      <form method="post" action="{% url 'link_transfer' link.code %}" class="mt-6 space-y-4">
+        {% csrf_token %}
+        <input type="text" name="new_owner" placeholder="username or email"
+               class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700 dark:bg-stone-800 dark:text-white">
+        <button type="submit" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500">Look up recipient</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

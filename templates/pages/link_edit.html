@@ -194,6 +194,19 @@
       </div>
     </form>
 
+    <form method="post" action="{% url 'link_transfer' link.code %}" class="mt-8 border-t border-stone-200 pt-6 dark:border-stone-800">
+      {% csrf_token %}
+      <label for="id_new_owner" class="block text-sm font-medium text-stone-700 dark:text-stone-300">Transfer ownership</label>
+      <div class="mt-2 flex items-start gap-3">
+        <input type="text" name="new_owner" id="id_new_owner" placeholder="username or email"
+               class="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-white">
+        <button type="submit" class="shrink-0 rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
+          Transfer
+        </button>
+      </div>
+      <p class="mt-2 text-xs text-stone-400">Hands this link (and its history and tags) to another user on this server. You'll be asked to confirm.</p>
+    </form>
+
     <form method="post" action="{% url 'link_delete' link.code %}" class="mt-8 border-t border-stone-200 pt-6 dark:border-stone-800"
           onsubmit="return confirm('Delete this link and its click history?');">
       {% csrf_token %}

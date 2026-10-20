@@ -498,6 +498,78 @@ def link_edit(request, code):
 
 
 @login_required
+@rate_limited("transfer", limit=10, window_seconds=3600, key=lambda r: r.user.pk)
+def link_transfer(request, code):
+    """Hand a link to another user, in two steps.
+
+    Step 1: POST with `new_owner` renders a confirmation page naming the
+    recipient. Step 2: the same POST with `confirm_transfer=on` moves the
+    link, re-homing its tags under the new owner.
+    """
+    from django.contrib import messages as dj_messages
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    link = get_object_or_404(Link, code=code, user=request.user)
+
+    if request.method != "POST":
+        return redirect("link_edit", code=code)
+
+    new_owner_name = (request.POST.get("new_owner") or "").strip()
+    confirm = request.POST.get("confirm_transfer") == "on"
+
+    # Look the recipient up by username (case-insensitive) or email; the
+    # confirmation page posts the pk back, so accept that too.
+    lookup = Q(username__iexact=new_owner_name) | Q(email__iexact=new_owner_name)
+    if new_owner_name.isdigit():
+        lookup |= Q(pk=int(new_owner_name))
+    new_owner = User.objects.filter(lookup).first()
+
+    if not new_owner_name:
+        return render(
+            request,
+            "pages/link_transfer.html",
+            {"link": link, "new_owner": None, "error": "Enter a username or email."},
+        )
+    if new_owner is None:
+        return render(
+            request,
+            "pages/link_transfer.html",
+            {"link": link, "new_owner": None, "error": "No user found with that username or email."},
+        )
+    if new_owner == request.user:
+        return render(
+            request,
+            "pages/link_transfer.html",
+            {"link": link, "new_owner": None, "error": "You already own this link."},
+        )
+
+    if not confirm:
+        # Step 1: show the confirmation page.
+        return render(
+            request,
+            "pages/link_transfer.html",
+            {"link": link, "new_owner": new_owner},
+        )
+
+    # Step 2 confirmed: move the link and re-home tags under the new owner.
+    from .models import Tag
+
+    with transaction.atomic():
+        link.user = new_owner
+        link.save(update_fields=["user", "updated_at"])
+        tag_names = list(link.tags.values_list("name", flat=True))
+        for name in tag_names:
+            tag, _ = Tag.objects.get_or_create(user=new_owner, name=name)
+        link.tags.set([t for t in Tag.objects.filter(user=new_owner, name__in=tag_names)])
+
+    dj_messages.success(
+        request, f"Transferred /{link.code} to {new_owner.username}."
+    )
+    return redirect("dashboard")
+
+
+@login_required
 def link_toggle(request, code):
     """Activate/deactivate. Returns the row partial for HTMX, else redirects."""
     link = get_object_or_404(Link, code=code, user=request.user)

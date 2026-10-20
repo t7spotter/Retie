@@ -20,6 +20,10 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Ownership transfer**: hand any link — with its click history and
+  tags — to another user on the server from the edit page, username or
+  email lookup, with a confirmation step before it moves. The new owner
+  must accept implicitly by having the link appear in their dashboard.
 - **QR styling**: pick the dark and light colors of each link's QR SVG
   (`/<code>.qr.svg`) from the edit page, or via the API/MCP — handy for
   matching printed material. Empty values fall back to the defaults.
