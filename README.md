@@ -20,6 +20,10 @@ deployment, and no unnecessary infrastructure.
   destination another of your links already points at shows a warning
   with a "create/save anyway" confirmation step; trashed duplicates
   don't trigger it. The API and MCP never block on duplicates.
+- **Multi-domain**: configure extra hostnames via `EXTRA_DOMAINS` and
+  pin any link to one from the create/edit form (or API/MCP). The QR
+  code and short URL use the pinned domain, and the link answers only
+  there — visiting the same code on the default host 404s.
 - **Data export & account deletion**: one click downloads everything
   the account holds as a single JSON document (account info, links with
   all settings and notes, and every recorded anonymous click). Account
@@ -355,6 +359,7 @@ unpkg.com/lucide).
 | `CSRF_TRUSTED_ORIGINS` | Comma-separated `scheme://host` origins trusted for CSRF (HTTPS setups) |
 | `DATABASE_URL` | PostgreSQL DSN (`postgres://user:pass@host:5432/db`) |
 | `SITE_URL` | Canonical public URL used to build short links — **must include the scheme** (`https://…`); startup fails otherwise |
+| `EXTRA_DOMAINS` | Comma-separated extra hostnames links can be pinned to (e.g. `go.example.org,sho.rt`); a pinned link answers **only** on its chosen domain. Add the hosts to `ALLOWED_HOSTS` and point DNS at this deployment |
 | `BLOCKED_DESTINATIONS` | Comma-separated dest hosts (with their subdomains) that may never be shortenable |
 | `LINK_HEALTH_ENABLED` | `true` enables `manage.py check_links` (destination up/down badges). Off by default — see security note |
 | `GEOIP_DB` | Path to a GeoLite2-Country `.mmdb`; click events then record the visitor country (never the IP). Unset = dormant |

@@ -489,6 +489,9 @@ components:
         qr_light:
           type: string
           maxLength: 7
+        domain:
+          type: string
+          maxLength: 255
         password:
           type: string
           writeOnly: true
@@ -634,6 +637,9 @@ components:
         qr_light:
           type: string
           maxLength: 7
+        domain:
+          type: string
+          maxLength: 255
         password:
           type: string
           writeOnly: true

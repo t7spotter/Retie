@@ -243,7 +243,7 @@ def link_qr(request, code: str):
     dark = link.qr_dark or "#0e353c"
     light = link.qr_light or "#ffffff"
     buffer = io.BytesIO()
-    segno.make(f"{settings.SITE_URL}/{link.code}", error="m").save(
+    segno.make(link.short_url, error="m").save(
         buffer,
         kind="svg",
         scale=8,
@@ -716,6 +716,13 @@ def redirect_view(request, code):
     accurate.
     """
     link = get_object_or_404(Link, code=code)
+
+    # Multi-domain host binding: a link pinned to an extra domain only
+    # resolves there (hostname comparison, port-insensitive).
+    if link.domain:
+        host = (request.get_host() or "").split(":", 1)[0].lower()
+        if host != link.domain:
+            raise Http404()
 
     if not link.is_active:
         raise Http404()

@@ -33,6 +33,15 @@ if not SITE_URL.lower().startswith(("http://", "https://")):
         "public origin, e.g. 'http://127.0.0.1:8000' or 'https://links.example.com'."
     )
 
+# Optional extra domains (comma-separated hostnames) that links may be
+# served from: e.g. EXTRA_DOMAINS=go.example.org,sho.rt. Operators must
+# point DNS at this deployment and trust the Host header accordingly
+# (ALLOWED_HOSTS must include them too, as for any Django deployment).
+# The configured hostnames are the only ones links can ever be pinned to.
+EXTRA_DOMAINS = [
+    _d.strip().lower().lstrip(".") for _d in env.list("EXTRA_DOMAINS", default=[]) if _d
+]
+
 # Destinations may never point at these hosts (or their subdomains). Use it to
 # keep your shortener from laundering phishing/malware domains.
 # Example: BLOCKED_DESTINATIONS=evil.example,bit.ly,banned.org

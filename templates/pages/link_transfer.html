@@ -21,7 +21,7 @@
       </form>
     {% elif new_owner %}
       <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">
-        Hand <span class="font-medium text-indigo-600 dark:text-indigo-400">{{ SITE_URL }}/{{ link.code }}</span>
+        Hand <span class="font-medium text-indigo-600 dark:text-indigo-400">{{ link.short_url }}</span>
         over to <span class="font-medium">{{ new_owner.username }}</span>?
       </p>
       <ul class="mt-4 space-y-1 text-sm text-stone-600 dark:text-stone-300">

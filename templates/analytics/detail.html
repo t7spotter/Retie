@@ -17,7 +17,7 @@
           {% if link.title %}{{ link.title }}{% else %}Analytics{% endif %}
         </h1>
         <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <a href="{{ SITE_URL }}/{{ link.code }}" target="_blank" rel="noopener" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">{{ SITE_URL }}/{{ link.code }}</a>
+          <a href="{{ link.short_url }}" target="_blank" rel="noopener" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">{{ link.short_url }}</a>
           <i data-lucide="arrow-right" class="h-3.5 w-3.5 text-stone-400"></i>
           <span class="break-all text-stone-500 dark:text-stone-400">{{ link.destination }}</span>
         </div>
@@ -35,7 +35,7 @@
            title="Download this link's analytics as CSV">
           <i data-lucide="download" class="h-4 w-4"></i> CSV
         </a>
-        <button type="button" data-copy="{{ SITE_URL }}/{{ link.code }}"
+        <button type="button" data-copy="{{ link.short_url }}"
                 class="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800">
           <i data-lucide="copy" class="h-4 w-4"></i> Copy
         </button>

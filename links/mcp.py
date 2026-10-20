@@ -28,7 +28,6 @@ from analytics import queries
 from .authentication import MultiSchemeTokenAuthentication
 from .forms import LinkForm
 from .models import Link, Tag, generate_short_code
-from .views import _short_url
 
 MAX_LIST_PAGE_SIZE = 50
 MAX_ANALYTICS_DAYS = 90
@@ -115,6 +114,14 @@ def tool_create_link(user, args: dict) -> dict:
         if args.get("variant_b"):
             from .models import validate_destination
             payload["variant_b"] = validate_destination(str(args["variant_b"]))
+        if args.get("domain"):
+            from django.conf import settings
+            from urllib.parse import urlsplit
+            _domain = str(args["domain"]).strip().lower()
+            _default_host = (urlsplit(settings.SITE_URL).hostname or "").lower()
+            if _domain != _default_host and _domain not in settings.EXTRA_DOMAINS:
+                raise ToolError("domain must be one of EXTRA_DOMAINS (or the SITE_URL host).")
+            payload["domain"] = _domain
         for qr_key in ("qr_dark", "qr_light"):
             if args.get(qr_key):
                 import re
@@ -143,7 +150,7 @@ def tool_create_link(user, args: dict) -> dict:
         break
     return {
         "code": link.code,
-        "short_url": _short_url(link.code),
+        "short_url": link.short_url,
         "destination": link.destination,
         "is_active": link.is_active,
         "permanent": link.permanent,
@@ -156,6 +163,7 @@ def tool_create_link(user, args: dict) -> dict:
         "variant_b": link.variant_b,
         "qr_dark": link.qr_dark,
         "qr_light": link.qr_light,
+        "domain": link.domain,
     }
 
 
@@ -182,7 +190,7 @@ def tool_list_links(user, args: dict) -> dict:
     links = [
         {
             "code": link.code,
-            "short_url": _short_url(link.code),
+            "short_url": link.short_url,
             "destination": link.destination,
             "title": link.title,
             "is_active": link.is_active,
@@ -200,7 +208,7 @@ def tool_get_link(user, args: dict) -> dict:
     link = _user_link(user, args["code"])
     return {
         "code": link.code,
-        "short_url": _short_url(link.code),
+        "short_url": link.short_url,
         "destination": link.destination,
         "title": link.title,
         "is_active": link.is_active,
@@ -215,6 +223,7 @@ def tool_get_link(user, args: dict) -> dict:
         "variant_b": link.variant_b,
         "qr_dark": link.qr_dark,
         "qr_light": link.qr_light,
+        "domain": link.domain,
         "total_clicks": link.clicks.count(),
     }
 
@@ -263,6 +272,16 @@ def tool_update_link(user, args: dict) -> dict:
             raise ToolError("qr_light must be a 6-digit hex color like #ffffff.")
         link.qr_light = f"#{color.lstrip('#').lower()}" if color else ""
         updates.append("qr_light")
+    if "domain" in args:
+        from django.conf import settings as dj_settings
+        from urllib.parse import urlsplit as _urlsplit
+        _domain = str(args["domain"] or "").strip().lower()
+        if _domain:
+            _default_host = (_urlsplit(dj_settings.SITE_URL).hostname or "").lower()
+            if _domain != _default_host and _domain not in dj_settings.EXTRA_DOMAINS:
+                raise ToolError("domain must be one of EXTRA_DOMAINS (or the SITE_URL host).")
+        link.domain = _domain
+        updates.append("domain")
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")

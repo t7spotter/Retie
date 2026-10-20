@@ -79,6 +79,19 @@
       {% for error in form.code.errors %}
       <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
       {% endfor %}
+      {% if extra_domains %}
+      <div class="mt-3">
+        <label for="id_domain" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Domain <span class="font-normal text-stone-400">(optional)</span></label>
+        <select name="domain" id="id_domain"
+                class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm text-stone-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-stone-700 dark:bg-stone-800 dark:text-white">
+          <option value="">Default ({{ SITE_URL }})</option>
+          {% for host in extra_domains %}
+          <option value="{{ host }}" {% if form.domain.value == host %}selected{% endif %}>{{ host }}</option>
+          {% endfor %}
+        </select>
+        <p class="mt-1.5 text-xs text-stone-400">The link works only on the chosen domain, and its QR code points there.</p>
+      </div>
+      {% endif %}
     </div>
 
     <div>

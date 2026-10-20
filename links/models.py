@@ -162,6 +162,10 @@ class Link(models.Model):
     # roughly 50/50 between destination (variant A) and variant_b (B).
     # The variant actually shown is stored on each click event.
     variant_b = models.URLField(blank=True, default="")
+    # Multi-domain: when set, the short URL (and QR) use this hostname
+    # instead of SITE_URL, and the redirect only answers on that host.
+    # Only hostnames configured in EXTRA_DOMAINS may be stored.
+    domain = models.CharField(max_length=255, blank=True, default="")
     # QR styling: owner-chosen colors. Empty values fall back to the
     # application defaults when the SVG is generated.
     qr_dark = models.CharField(max_length=7, blank=True, default="")  # e.g. #0e353c
@@ -199,6 +203,16 @@ class Link(models.Model):
         indexes = [
             models.Index(fields=["user", "-created_at"]),
         ]
+
+    @property
+    def short_url(self) -> str:
+        """Full short URL honoring the link's domain override, if any."""
+        from django.conf import settings
+
+        if not self.domain:
+            return f"{settings.SITE_URL}/{self.code}"
+        scheme = settings.SITE_URL.split("://", 1)[0] or "http"
+        return f"{scheme}://{self.domain}/{self.code}"
 
     def __str__(self) -> str:
         return self.code

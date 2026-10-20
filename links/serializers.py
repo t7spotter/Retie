@@ -69,6 +69,7 @@ class LinkSerializer(serializers.ModelSerializer):
             "allowed_referrers",
             "qr_dark",
             "qr_light",
+            "domain",
             "password",
             "remove_password",
             "created_at",
@@ -124,10 +125,7 @@ class LinkSerializer(serializers.ModelSerializer):
         link.save(update_fields=["allowed_referrers", "updated_at"])
 
     def get_short_url(self, obj: Link) -> str:
-        request = self.context.get("request")
-        from django.conf import settings
-
-        return f"{settings.SITE_URL}/{obj.code}"
+        return obj.short_url
 
     def validate_destination(self, value):
         from .models import validate_destination
@@ -139,6 +137,21 @@ class LinkSerializer(serializers.ModelSerializer):
 
     def validate_qr_light(self, value):
         return self._validate_hex_color(value, "qr_light")
+
+    def validate_domain(self, value):
+        from django.conf import settings
+
+        from urllib.parse import urlsplit
+
+        value = (value or "").strip().lower()
+        if not value:
+            return ""
+        default_host = (urlsplit(settings.SITE_URL).hostname or "").lower()
+        if value != default_host and value not in settings.EXTRA_DOMAINS:
+            raise serializers.ValidationError(
+                "domain must be one of EXTRA_DOMAINS (or the SITE_URL host)."
+            )
+        return value
 
     def validate_code(self, value):
         from .models import validate_alias

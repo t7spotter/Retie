@@ -29,7 +29,6 @@ class LinkForm(forms.ModelForm):
     # values (an edit without touching these) changes nothing — previously
     # stored UTM parameters are never stripped.
     utm_source = forms.CharField(required=False, strip=True, max_length=120)
-    utm_source = forms.CharField(required=False, strip=True, max_length=120)
     utm_medium = forms.CharField(required=False, strip=True, max_length=120)
     utm_campaign = forms.CharField(required=False, strip=True, max_length=120)
     # Hotlink protection allow-list: comma/semicolon separated domains.
@@ -39,6 +38,10 @@ class LinkForm(forms.ModelForm):
     # Set by the "create anyway" button after a duplicate-destination
     # warning; never rendered on the initial form.
     confirm_duplicate = forms.BooleanField(required=False)
+
+    # Multi-domain: one of the hostnames configured via EXTRA_DOMAINS
+    # (plus the SITE_URL host itself); "" = the default domain.
+    domain = forms.ChoiceField(required=False)
 
     def __init__(self, *args, user=None, instance=None, **kwargs):
         self.user = user
@@ -51,6 +54,15 @@ class LinkForm(forms.ModelForm):
                 ),
             }
         super().__init__(*args, instance=instance, **kwargs)
+        # Domain choices come from configuration, so they exist per-form.
+        from urllib.parse import urlsplit
+        from django.conf import settings
+
+        default_host = urlsplit(settings.SITE_URL).hostname
+        hosts = [default_host or ""] + [
+            _d for _d in settings.EXTRA_DOMAINS if _d != default_host
+        ]
+        self.fields["domain"].choices = [("", "Default domain")] + [(_h, _h) for _h in hosts]
 
     expires_at = forms.DateTimeField(
         required=False,
@@ -84,6 +96,7 @@ class LinkForm(forms.ModelForm):
             "variant_b",
             "qr_dark",
             "qr_light",
+            "domain",
             "is_active",
             "permanent",
             "public_stats",
@@ -209,6 +222,9 @@ class LinkForm(forms.ModelForm):
         # when the SVG is generated).
         link.qr_dark = self.cleaned_data.get("qr_dark") or ""
         link.qr_light = self.cleaned_data.get("qr_light") or ""
+        # Domain pinning: only hosts from EXTRA_DOMAINS (+ SITE_URL host)
+        # reach validated_data at all (ChoiceField); "" = default domain.
+        link.domain = self.cleaned_data.get("domain") or ""
         with transaction.atomic():
             link.save()
             for name in self.tag_names:
