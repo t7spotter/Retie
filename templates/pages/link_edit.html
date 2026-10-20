@@ -92,6 +92,17 @@
         {% endfor %}
       </div>
 
+      <div>
+        <label for="id_goes_live_at" class="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Goes live at</label>
+        <input type="datetime-local" name="goes_live_at" id="id_goes_live_at"
+               value="{% if form.goes_live_at.value %}{{ form.goes_live_at.value|date:'Y-m-d\TH:i' }}{% endif %}"
+               class="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:border-stone-700 dark:bg-stone-950 dark:[color-scheme:dark] dark:focus:border-indigo-500 dark:focus:ring-indigo-900/40 {% if form.goes_live_at.errors %}border-red-400{% endif %}">
+        <p class="mt-1.5 text-xs text-stone-400">Until then the link 404s. Leave empty to go live immediately.</p>
+        {% for error in form.goes_live_at.errors %}
+        <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+        {% endfor %}
+      </div>
+
       <div class="flex items-center justify-between pt-2">
         <div class="flex flex-col gap-2">
           <label for="id_is_active" class="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-700 dark:text-stone-300">

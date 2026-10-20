@@ -645,6 +645,9 @@ def redirect_view(request, code):
         raise Http404()
     if link.expires_at and link.expires_at <= timezone.now():
         raise Http404()
+    # Scheduled activation: not live until its go-live moment arrives.
+    if link.goes_live_at and timezone.now() < link.goes_live_at:
+        raise Http404()
 
     # Referrer allow-list (hotlink protection). Empty always passes; a
     # missing referrer always passes (typed URLs, QR codes); anything else

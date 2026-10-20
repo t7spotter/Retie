@@ -59,6 +59,12 @@ class LinkForm(forms.ModelForm):
         input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"],
     )
 
+    goes_live_at = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M"],
+    )
+
     class Meta:
         model = Link
         fields = [
@@ -66,6 +72,7 @@ class LinkForm(forms.ModelForm):
             "title",
             "code",
             "expires_at",
+            "goes_live_at",
             "is_active",
             "permanent",
             "public_stats",

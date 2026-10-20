@@ -16,6 +16,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Count, Max, Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_datetime
+from django.utils.timezone import is_naive, make_aware
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -48,14 +50,16 @@ def _user_link(user, code: str) -> Link:
         raise ToolError(f"No link with code {code!r}.")
 
 
-def _parse_expires(raw) -> object:
+def _parse_expires(raw, field: str = "expires_at") -> object:
     """Accept an ISO-8601 datetime ('2026-01-31T14:30' or with seconds/TZ)."""
     parsed = parse_datetime(raw)
     if parsed is None:
         raise ToolError(
-            f"expires_at {raw!r} is not a valid ISO 8601 datetime "
+            f"{field} {raw!r} is not a valid ISO 8601 datetime "
             "(e.g. '2026-01-31T14:30')."
         )
+    if settings.USE_TZ and is_naive(parsed):
+        parsed = make_aware(parsed)
     return parsed
 
 
@@ -108,6 +112,9 @@ def tool_create_link(user, args: dict) -> dict:
             from django.contrib.auth.hashers import make_password
 
             payload["password_hash"] = make_password(cleaned["password"])
+        goes_live = _parse_expires(args["goes_live_at"], "goes_live_at") if args.get("goes_live_at") else None
+        if goes_live is not None:
+            payload["goes_live_at"] = goes_live
         payload["code"] = cleaned.get("code") or generate_short_code()
         if expires is not None:
             payload["expires_at"] = expires
@@ -134,6 +141,8 @@ def tool_create_link(user, args: dict) -> dict:
         "public_hide_countries": link.public_hide_countries,
         "allowed_referrers": [d for d in link.allowed_referrers.split("\n") if d],
         "notes": link.notes,
+        "expires_at": link.expires_at,
+        "goes_live_at": link.goes_live_at,
     }
 
 
@@ -188,6 +197,8 @@ def tool_get_link(user, args: dict) -> dict:
         "public_hide_countries": link.public_hide_countries,
         "allowed_referrers": [d for d in link.allowed_referrers.split("\n") if d],
         "notes": link.notes,
+        "expires_at": link.expires_at,
+        "goes_live_at": link.goes_live_at,
         "total_clicks": link.clicks.count(),
     }
 
@@ -213,6 +224,9 @@ def tool_update_link(user, args: dict) -> dict:
     if "expires_at" in args:
         link.expires_at = _parse_expires(args["expires_at"]) if args["expires_at"] else None
         updates.append("expires_at")
+    if "goes_live_at" in args:
+        link.goes_live_at = _parse_expires(args["goes_live_at"], "goes_live_at") if args["goes_live_at"] else None
+        updates.append("goes_live_at")
     if "is_active" in args:
         link.is_active = bool(args["is_active"])
         updates.append("is_active")
@@ -311,6 +325,10 @@ TOOLS = [
                     "type": "string",
                     "description": "Optional ISO 8601 expiry after which the link stops redirecting.",
                 },
+                "goes_live_at": {
+                    "type": "string",
+                    "description": "Optional ISO 8601 go-live moment; the link 404s until then.",
+                },
                 "is_active": {"type": "boolean", "description": "Defaults to true."},
                 "public_stats": {"type": "boolean", "description": "Publish a public stats page at /stats/<code>."},
         "public_hide_countries": {"type": "boolean", "description": "Hide the country list on the public stats page."},
@@ -358,6 +376,10 @@ TOOLS = [
                 "expires_at": {
                     "type": ["string", "null"],
                     "description": "New expiry (ISO 8601); null removes the expiry.",
+                },
+                "goes_live_at": {
+                    "type": ["string", "null"],
+                    "description": "New go-live moment (ISO 8601); null makes the link live immediately.",
                 },
                 "is_active": {"type": "boolean", "description": "Start/stop redirecting."},
                 "public_stats": {"type": "boolean", "description": "Publish/unpublish the public stats page."},

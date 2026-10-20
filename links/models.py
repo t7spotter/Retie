@@ -155,6 +155,9 @@ class Link(models.Model):
         default=False,
         help_text="Hide the country breakdown on the public stats page.",
     )
+    # Optional go-live moment: while in the future the link does not
+    # redirect yet, regardless of is_active.
+    goes_live_at = models.DateTimeField(null=True, blank=True)
     # Hotlink protection: when non-empty, redirects are served only when
     # the visitor's referrer host matches one of these domains (subdomains
     # included). Direct traffic (no referrer header) is always allowed —
@@ -199,9 +202,16 @@ class Link(models.Model):
         return self.expires_at <= timezone.now()
 
     @property
+    def is_scheduled(self) -> bool:
+        """True when the link is waiting for its go-live moment."""
+        if self.goes_live_at is None:
+            return False
+        return timezone.now() < self.goes_live_at
+
+    @property
     def is_live(self) -> bool:
         """True when the link currently redirects."""
-        return self.is_active and not self.is_expired
+        return self.is_active and not self.is_expired and not self.is_scheduled
 
     @property
     def status(self) -> str:
@@ -209,6 +219,8 @@ class Link(models.Model):
             return "inactive"
         if self.is_expired:
             return "expired"
+        if self.is_scheduled:
+            return "scheduled"
         return "active"
 
 

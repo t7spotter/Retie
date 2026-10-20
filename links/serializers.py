@@ -47,6 +47,7 @@ class LinkSerializer(serializers.ModelSerializer):
             "is_active",
             "expires_at",
             "status",
+            "goes_live_at",
             "tags",
             "permanent",
             "public_stats",
